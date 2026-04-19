@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2C1810">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Calculadora Emprendimiento</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+
+<!-- ─── Sección: Recetario ─────────────────────────────── -->
+<section id="sec-recetario" class="seccion">
+  <div class="seccion-header">
+    <h1>Recetario</h1>
+  </div>
+  <div class="placeholder-content">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+      <rect x="9" y="3" width="6" height="4" rx="2"/>
+      <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+    </svg>
+    <p>Próximamente</p>
+  </div>
+</section>
+
+<!-- ─── Sección: Presupuesto ──────────────────────────── -->
+<section id="sec-presupuesto" class="seccion">
+  <div class="seccion-header">
+    <h1>Presupuesto</h1>
+  </div>
+  <div class="placeholder-content">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+    <p>Próximamente</p>
+  </div>
+</section>
+
+<!-- ─── Sección: Historial ────────────────────────────── -->
+<section id="sec-historial" class="seccion">
+  <div class="seccion-header">
+    <h1>Historial</h1>
+  </div>
+  <div class="placeholder-content">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    <p>Próximamente</p>
+  </div>
+</section>
+
+<!-- ─── Sección: Configuración ────────────────────────── -->
+<section id="sec-configuracion" class="seccion activa">
+  <div class="seccion-header">
+    <h1>Configuración</h1>
+    <p>Constantes de cálculo y equipos</p>
+  </div>
+
+  <!-- Constantes globales -->
+  <div class="card">
+    <div class="card-title">Costos base</div>
+
+    <div class="form-row">
+      <label for="cfg-precio_gas">Precio del gas (por litro)</label>
+      <input type="number" id="cfg-precio_gas" min="0" step="any" placeholder="0.00">
+    </div>
+
+    <div class="form-row">
+      <label for="cfg-precio_kwh">Precio electricidad (kWh)</label>
+      <input type="number" id="cfg-precio_kwh" min="0" step="any" placeholder="0.00">
+    </div>
+
+    <div class="form-row-inline">
+      <div>
+        <label for="cfg-margen_ganancia">Margen de ganancia (%)</label>
+        <input type="number" id="cfg-margen_ganancia" min="0" step="1" placeholder="30">
+      </div>
+      <div>
+        <label for="cfg-multiplicador_mano_obra">Multiplicador M.O.</label>
+        <input type="number" id="cfg-multiplicador_mano_obra" min="1" step="any" placeholder="2">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label for="cfg-salario_minimo_hora">Salario mínimo por hora</label>
+      <input type="number" id="cfg-salario_minimo_hora" min="0" step="any" placeholder="0.00">
+    </div>
+
+    <button class="btn btn-primary" onclick="guardarConfiguracion()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+      </svg>
+      Guardar constantes
+    </button>
+  </div>
+
+  <!-- Equipos -->
+  <div class="card">
+    <div class="card-title">Equipos de cocina</div>
+    <div id="equipos-lista"></div>
+    <button class="btn btn-secondary" style="margin-top:14px" onclick="abrirModalEquipo()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Agregar equipo
+    </button>
+  </div>
+
+  <!-- Respaldo -->
+  <div class="divider-label">Respaldo de datos</div>
+  <div class="backup-row">
+    <button class="btn btn-secondary" onclick="handleExportar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Exportar
+    </button>
+    <button class="btn btn-secondary" onclick="handleImportar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Importar
+    </button>
+  </div>
+  <input type="file" id="input-importar" accept=".json" style="display:none">
+</section>
+
+<!-- ─── Navegación inferior ───────────────────────────── -->
+<nav class="nav-bottom">
+  <button class="nav-item" data-seccion="sec-recetario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+      <rect x="9" y="3" width="6" height="4" rx="2"/>
+      <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+    </svg>
+    Recetario
+  </button>
+  <button class="nav-item" data-seccion="sec-presupuesto">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+    Presupuesto
+  </button>
+  <button class="nav-item" data-seccion="sec-historial">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    Historial
+  </button>
+  <button class="nav-item active" data-seccion="sec-configuracion">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+    </svg>
+    Configuración
+  </button>
+</nav>
+
+<!-- ─── Modal / Drawer ────────────────────────────────── -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="modal-title" class="modal-title"></div>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button id="modal-confirmar" class="btn btn-primary">Guardar</button>
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Toast ─────────────────────────────────────────── -->
+<div id="toast" class="toast"></div>
+
+<!-- ─── Scripts ───────────────────────────────────────── -->
+<script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+<script src="/js/db.js"></script>
+<script src="/js/backup.js"></script>
+<script src="/js/app.js"></script>
+
+</body>
+</html>
