@@ -2,7 +2,7 @@
   "name": "Calculadora Emprendimiento",
   "short_name": "Calc. Emp.",
   "description": "Gestión de recetas y cálculo de costos de producción",
-  "start_url": "/",
+  "start_url": "/recipeness/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#2C1810",
