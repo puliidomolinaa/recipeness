@@ -230,7 +230,7 @@ function escapeHTML(str) {
 document.addEventListener('DOMContentLoaded', async () => {
   // Registrar Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(console.error);
+    navigator.serviceWorker.register('/recipeness/sw.js').catch(console.error);
   }
 
   // Inicializar DB
