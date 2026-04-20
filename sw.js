@@ -9,7 +9,6 @@ const ASSETS = [
   'recipeness/manifest.json',
   'recipeness/icons/icon-192.svg',
   'recipeness/icons/icon-512.svg',
-  'https://unpkg.com/dexie@3.2.4/dist/dexie.js'
 ];
 
 self.addEventListener('install', (e) => {
