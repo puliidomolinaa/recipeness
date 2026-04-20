@@ -1,15 +1,15 @@
 const CACHE_NAME = 'calc-emp-v1';
 const ASSETS = [
-  'recipeness/',
-  'recipeness/index.html',
-  'recipeness/css/app.css',
-  'recipeness/js/app.js',
-  'recipeness/js/db.js',
-  'recipeness/js/backup.js',
-  'recipeness/manifest.json',
-  'recipeness/icons/icon-192.svg',
-  'recipeness/icons/icon-512.svg',
-  'recipeness/js/dexie.js',
+  '/recipeness/',
+  '/recipeness/index.html',
+  '/recipeness/css/app.css',
+  '/recipeness/js/app.js',
+  '/recipeness/js/db.js',
+  '/recipeness/js/backup.js',
+  '/recipeness/manifest.json',
+  '/recipeness/icons/icon-192.svg',
+  '/recipeness/icons/icon-512.svg',
+  '/recipeness/js/dexie.js',
 ];
 
 self.addEventListener('install', (e) => {
