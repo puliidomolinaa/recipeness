@@ -9,6 +9,7 @@ const ASSETS = [
   'recipeness/manifest.json',
   'recipeness/icons/icon-192.svg',
   'recipeness/icons/icon-512.svg',
+  'recipeness/js/dexie.js',
 ];
 
 self.addEventListener('install', (e) => {
