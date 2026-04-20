@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calc-emp-v1';
+const CACHE_NAME = 'calc-emp-v2';
 const ASSETS = [
   '/recipeness/',
   '/recipeness/index.html',
@@ -31,11 +31,13 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      caches.match('/recipeness/index.html').then((cached) => cached || fetch(e.request))
+      caches.match('/recipeness/index.html')
+        .then((cached) => cached || fetch(e.request))
     );
     return;
   }
   e.respondWith(
-    caches.match(e.request).then((cached) => cached || fetch(e.request))
+    caches.match(e.request)
+      .then((cached) => cached || fetch(e.request).catch(() => caches.match('/recipeness/index.html')))
   );
 });
