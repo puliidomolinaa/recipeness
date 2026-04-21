@@ -603,7 +603,7 @@ async function guardarReceta() {
       fecha_modificacion: ahora
     });
   }
-
+  
   // 3. Insertar ingredientes (solo los que tienen nombre y están vinculados)
   const ingParaGuardar = ingredientesFilas.filter(f =>
     f.nombre.trim() && f.ingrediente_catalogo_id
