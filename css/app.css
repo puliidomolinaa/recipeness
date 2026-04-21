@@ -148,6 +148,7 @@ input:focus, select:focus, textarea:focus {
   gap: 10px;
   margin-bottom: 14px;
 }
+.req { color: var(--accent); }
 
 /* ─── Botones ────────────────────────────────────────────── */
 .btn {
@@ -178,6 +179,14 @@ input:focus, select:focus, textarea:focus {
 }
 .btn-secondary:active { background: var(--border); }
 
+.btn-danger {
+  background: #FCEAEA;
+  color: #B33;
+  border: 1.5px solid #F5CCCC;
+  width: 100%;
+}
+.btn-danger:active { background: #F5CCCC; }
+
 .btn-ghost {
   color: var(--accent);
   padding: 8px 12px;
@@ -195,6 +204,8 @@ input:focus, select:focus, textarea:focus {
 .btn-icon svg { width: 16px; height: 16px; }
 .btn-edit  { background: var(--bg-input); color: var(--ink-2); border: 1.5px solid var(--border); }
 .btn-delete{ background: #FCEAEA; color: #B33; border: 1.5px solid #F5CCCC; }
+.btn-back  { background: transparent; color: var(--ink-2); }
+.btn-back svg { width: 20px; height: 20px; }
 
 /* ─── Lista de equipos ───────────────────────────────────── */
 .equipo-item {
@@ -294,7 +305,7 @@ input:focus, select:focus, textarea:focus {
   padding: 10px 20px;
   border-radius: 100px;
   white-space: nowrap;
-  z-index: 300;
+  z-index: 500;
   opacity: 0;
   transition: all 0.2s;
   pointer-events: none;
@@ -347,4 +358,463 @@ input:focus, select:focus, textarea:focus {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MÓDULO 2 — RECETARIO
+   ══════════════════════════════════════════════════════════ */
+
+/* ─── Onboarding ─────────────────────────────────────────── */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,18,8,0.7);
+  z-index: 400;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.onboarding-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.onboarding-sheet {
+  background: var(--bg);
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 28px 24px 40px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(.32,.72,0,1);
+}
+.onboarding-overlay.visible .onboarding-sheet {
+  transform: translateY(0);
+}
+.onboarding-icon {
+  width: 56px; height: 56px;
+  background: var(--accent-light);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.onboarding-icon svg {
+  width: 32px; height: 32px;
+  color: var(--accent);
+}
+.onboarding-titulo {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+.onboarding-texto {
+  font-size: 14px;
+  color: var(--ink-2);
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+.onboarding-nota {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--border-dark);
+  margin-bottom: 22px;
+}
+.onboarding-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ─── Lista de recetas ───────────────────────────────────── */
+.recetas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 80px; /* espacio para FAB */
+}
+.receta-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.receta-item:first-child { border-top: 1.5px solid var(--border); }
+.receta-item-body {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  padding: 2px 0;
+}
+.receta-nombre {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.receta-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 3px;
+  align-items: center;
+}
+.receta-categoria {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.receta-fecha {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* ─── Estado vacío ───────────────────────────────────────── */
+.recetario-empty {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 55dvh;
+  gap: 12px;
+  color: var(--ink-3);
+  text-align: center;
+}
+.recetario-empty svg {
+  width: 52px; height: 52px;
+  opacity: 0.25;
+}
+.recetario-empty p {
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.recetario-empty-sub {
+  font-family: var(--font-mono);
+  font-size: 12px !important;
+  color: var(--ink-3) !important;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Botón FAB ──────────────────────────────────────────── */
+.btn-fab {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 16px);
+  right: 20px;
+  width: 52px; height: 52px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(196,80,26,0.4);
+  z-index: 90;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-fab svg { width: 22px; height: 22px; color: #fff; }
+.btn-fab:active {
+  transform: scale(0.93);
+  box-shadow: 0 2px 8px rgba(196,80,26,0.3);
+}
+
+/* ─── Paneles de pantalla completa ───────────────────────── */
+.panel-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(.32,.72,0,1);
+  /* No nav bottom — panel se superpone completamente */
+}
+.panel-fullscreen.visible {
+  transform: translateX(0);
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  min-height: 56px;
+  /* Respetar safe area iOS */
+  padding-top: max(12px, env(safe-area-inset-top));
+}
+.panel-titulo {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  text-align: center;
+  flex: 1;
+}
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  padding-bottom: 8px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+.panel-footer {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  border-top: 1.5px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ─── Aviso informativo ──────────────────────────────────── */
+.aviso-info {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #FFF8E8;
+  border: 1.5px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.aviso-info svg { flex-shrink: 0; margin-top: 2px; color: #C4950A; }
+
+/* ─── Filas de ingredientes ──────────────────────────────── */
+.ing-encabezado {
+  display: grid;
+  grid-template-columns: 1fr 70px 80px 36px;
+  gap: 6px;
+  padding: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.ing-fila {
+  margin-bottom: 6px;
+}
+.ing-fila-inputs {
+  display: grid;
+  grid-template-columns: 1fr 70px 80px 36px;
+  gap: 6px;
+  align-items: center;
+}
+.ing-campo-nombre { position: relative; }
+.ing-nombre-input { width: 100%; }
+.ing-cantidad-input { width: 100%; padding: 10px 8px; }
+.ing-unidad-select { width: 100%; padding: 10px 6px; font-size: 13px; }
+.ing-btn-delete { width: 36px; height: 36px; flex-shrink: 0; }
+
+/* Dropdown autocomplete */
+.autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-dark);
+  border-radius: var(--radius);
+  z-index: 350;
+  box-shadow: 0 4px 16px rgba(30,18,8,0.12);
+  max-height: 160px;
+  overflow-y: auto;
+}
+.ac-item {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.ac-item:last-child { border-bottom: none; }
+.ac-item:active, .ac-item:hover { background: var(--accent-light); }
+
+/* Aviso nuevo ingrediente */
+.ing-aviso {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #FFF8E8;
+  border: 1.5px solid var(--gold);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.aviso-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.btn-aviso-si, .btn-aviso-no {
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid;
+}
+.btn-aviso-si {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-aviso-no {
+  background: var(--bg-input);
+  color: var(--ink-2);
+  border-color: var(--border);
+}
+
+/* ─── Filas de procesos ──────────────────────────────────── */
+.proc-encabezado {
+  display: grid;
+  grid-template-columns: 1fr 80px 36px;
+  gap: 6px;
+  padding: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.proc-fila {
+  display: grid;
+  grid-template-columns: 1fr 80px 36px;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.proc-equipo-select { width: 100%; font-size: 13px; }
+.proc-minutos-input { width: 100%; padding: 10px 8px; }
+.proc-btn-delete { width: 36px; height: 36px; flex-shrink: 0; }
+
+/* Botón agregar fila */
+.btn-agregar-fila {
+  margin-top: 10px;
+  font-size: 12px;
+  padding: 9px 14px;
+  width: auto;
+  display: inline-flex;
+}
+
+/* ─── Vista de detalle ───────────────────────────────────── */
+.detalle-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.detalle-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 3px 9px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+.detalle-porciones {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.detalle-notas {
+  font-size: 14px;
+  color: var(--ink-2);
+  font-style: italic;
+  line-height: 1.6;
+  padding: 12px 14px;
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  border-left: 3px solid var(--border-dark);
+}
+.detalle-section-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 20px 0 8px;
+}
+.detalle-section-title:first-of-type { margin-top: 0; }
+.detalle-tabla {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.detalle-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.detalle-fila:last-child { border-bottom: none; }
+.detalle-fila-nombre {
+  font-size: 14px;
+  color: var(--ink);
+  flex: 1;
+}
+.detalle-fila-valor {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  margin-left: 12px;
+}
+.detalle-empty {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+  padding: 8px 0;
+}
+.detalle-fechas {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 6px;
 }
