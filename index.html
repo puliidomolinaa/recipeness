@@ -312,10 +312,6 @@
           <input type="number" id="rf-porciones" min="1" step="1" placeholder="1">
         </div>
       </div>
-      <div class="form-row">
-        <label for="rf-notas">Notas (opcional)</label>
-        <textarea id="rf-notas" placeholder="Observaciones, temperatura, consejos..." rows="3"></textarea>
-      </div>
     </div>
 
     <!-- Ingredientes -->
@@ -335,6 +331,10 @@
         </svg>
         Agregar ingrediente
       </button>
+      <div class="form-row" style="margin-top:16px; margin-bottom:0;">
+        <label for="rf-notas">Proceso (opcional)</label>
+        <textarea id="rf-notas" placeholder="Pasos, temperatura de mezcla, orden de incorporación..." rows="3"></textarea>
+      </div>
     </div>
 
     <!-- Procesos -->
@@ -342,7 +342,8 @@
       <div class="card-title">Procesos de cocción</div>
       <div class="proc-encabezado">
         <span>Equipo</span>
-        <span>Minutos</span>
+        <span>Min.</span>
+        <span>°C</span>
         <span></span>
       </div>
       <div id="procesos-filas"></div>
