@@ -24,18 +24,15 @@ function abrirModal(config) {
   const overlay = document.getElementById('modal-overlay');
   document.getElementById('modal-title').textContent = config.titulo;
 
-  // Construir formulario dinámico
   const body = document.getElementById('modal-body');
   body.innerHTML = config.html || '';
 
-  // Callbacks
   const btnConfirmar = document.getElementById('modal-confirmar');
   btnConfirmar.textContent = config.confirmar || 'Guardar';
   modalCallback = config.onConfirmar;
 
   overlay.classList.add('visible');
 
-  // Opcional: focus en primer input
   setTimeout(() => {
     const first = body.querySelector('input, select');
     if (first) first.focus();
@@ -150,7 +147,7 @@ function abrirModalEquipo(equipo = null) {
 
       if (!nombre) {
         mostrarToast('El nombre es obligatorio');
-        return false; // no cerrar modal
+        return false;
       }
 
       if (equipo) {
@@ -162,7 +159,7 @@ function abrirModalEquipo(equipo = null) {
       }
 
       await renderEquipos();
-      return true; // cerrar modal
+      return true;
     }
   });
 }
@@ -209,6 +206,7 @@ async function procesarImportacion(e) {
     await importarRespaldo(archivo);
     await cargarConfiguracion();
     await renderEquipos();
+    await renderRecetario();
     mostrarToast('Datos restaurados correctamente');
   } catch (err) {
     mostrarToast('Error: archivo inválido');
@@ -219,6 +217,7 @@ async function procesarImportacion(e) {
 
 // ─── Utilidades ──────────────────────────────────────────
 function escapeHTML(str) {
+  if (typeof str !== 'string') return '';
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -259,10 +258,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Importar archivo
   document.getElementById('input-importar').addEventListener('change', procesarImportacion);
 
-  // Cargar datos iniciales
+  // Cargar datos iniciales de configuración
   await cargarConfiguracion();
   await renderEquipos();
 
+  // Inicializar recetario (incluye onboarding y lista de recetas)
+  await initRecetario();
+
   // Mostrar sección inicial
-  navegarA('sec-configuracion');
+  navegarA('sec-recetario');
 });
