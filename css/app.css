@@ -735,6 +735,68 @@ input:focus, select:focus, textarea:focus {
   display: inline-flex;
 }
 
+/* ─── Filtros de categorías ──────────────────────────────── */
+.filtros-categorias {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 0 0 14px;
+  margin-bottom: 4px;
+  /* scroll suave y sin scrollbar visible */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  cursor: grab;
+  user-select: none;
+}
+.filtros-categorias::-webkit-scrollbar { display: none; }
+.filtros-categorias.dragging { cursor: grabbing; }
+
+.filtro-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.filtro-chip.activo {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.filtro-chip:active { opacity: 0.8; }
+
+/* ─── Gestión de categorías en Configuración ─────────────── */
+.categorias-gestion {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 12px;
+}
+.categoria-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.categoria-item:last-child { border-bottom: none; }
+.categoria-nombre {
+  font-size: 14px;
+  color: var(--ink);
+}
+.categorias-nueva-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.categorias-nueva-row input { flex: 1; }
+
 /* ─── Vista de detalle ───────────────────────────────────── */
 .detalle-meta-row {
   display: flex;
@@ -820,4 +882,3 @@ input:focus, select:focus, textarea:focus {
   flex-wrap: wrap;
   gap: 6px;
 }
-
