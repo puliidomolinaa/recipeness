@@ -3,7 +3,8 @@
 // ─── Estado ──────────────────────────────────────────────
 let recetaEnEdicion = null; // null = nueva receta, objeto = editar
 let ingredientesFilas = []; // [{id, nombre, cantidad, unidad, esNuevo}]
-let procesosFilas = [];     // [{id, equipo_id, minutos}]
+let procesosFilas = [];     // [{filaId, equipo_id, minutos, temperatura}]
+let _equiposCache = [];     // cache local de equipos para acceso síncrono en render
 let _filaCounter = 0;
 
 function _newFilaId() { return ++_filaCounter; }
@@ -34,7 +35,11 @@ async function cerrarOnboarding(irAConfig = false) {
 async function renderRecetario() {
   const lista = document.getElementById('recetas-lista');
   const empty = document.getElementById('recetas-empty');
-  const recetas = await db.recetas.orderBy('fecha_creacion').reverse().toArray();
+  let recetas = await db.recetas.orderBy('fecha_creacion').reverse().toArray();
+
+  if (_categoriaActiva !== null) {
+    recetas = recetas.filter(r => r.categoria === _categoriaActiva);
+  }
 
   if (recetas.length === 0) {
     lista.innerHTML = '';
@@ -110,7 +115,6 @@ async function abrirDetalleReceta(id) {
       <span class="detalle-badge">${escapeHTML(receta.categoria || 'Sin categoría')}</span>
       <span class="detalle-porciones">${receta.porciones_base} porción${receta.porciones_base !== 1 ? 'es' : ''}</span>
     </div>
-    ${receta.notas ? `<div class="detalle-notas">${escapeHTML(receta.notas)}</div>` : ''}
 
     <div class="detalle-section-title">Ingredientes</div>
     ${ingredientes.length === 0
@@ -130,9 +134,14 @@ async function abrirDetalleReceta(id) {
           ${procesos.map(p => `
             <div class="detalle-fila">
               <span class="detalle-fila-nombre">${escapeHTML(p.nombre_equipo)}</span>
-              <span class="detalle-fila-valor">${p.minutos} min</span>
+              <span class="detalle-fila-valor">${p.minutos} min${p.temperatura != null ? ` · ${p.temperatura}°C` : ''}</span>
             </div>`).join('')}
         </div>`}
+
+    ${receta.notas ? `
+      <div class="detalle-section-title">Proceso</div>
+      <div class="detalle-notas">${escapeHTML(receta.notas)}</div>
+    ` : ''}
 
     <div class="detalle-fechas">
       <span>Creada: ${fechaCreacion}</span>
@@ -164,6 +173,7 @@ async function abrirFormularioReceta(id = null) {
   _filaCounter = 0;
 
   const equipos = await db.equipos.toArray();
+  _equiposCache = equipos; // poblar cache antes de cualquier render
 
   if (id !== null) {
     recetaEnEdicion = await db.recetas.get(id);
@@ -198,7 +208,8 @@ async function abrirFormularioReceta(id = null) {
       procesosFilas.push({
         filaId: _newFilaId(),
         equipo_id: proc.equipo_id,
-        minutos: proc.minutos
+        minutos: proc.minutos,
+        temperatura: proc.temperatura ?? null
       });
     }
   } else {
@@ -208,9 +219,12 @@ async function abrirFormularioReceta(id = null) {
   // Título
   document.getElementById('form-titulo').textContent = id ? 'Editar receta' : 'Nueva receta';
 
+  // Poblar select de categorías desde DB
+  await renderSelectCategorias();
+
   // Campos básicos
   document.getElementById('rf-nombre').value = recetaEnEdicion ? recetaEnEdicion.nombre : '';
-  document.getElementById('rf-categoria').value = recetaEnEdicion ? recetaEnEdicion.categoria : 'Postre';
+  document.getElementById('rf-categoria').value = recetaEnEdicion ? recetaEnEdicion.categoria : (await getCategorias())[0] || 'Postre';
   document.getElementById('rf-porciones').value = recetaEnEdicion ? recetaEnEdicion.porciones_base : '';
   document.getElementById('rf-notas').value = recetaEnEdicion ? (recetaEnEdicion.notas || '') : '';
 
@@ -469,20 +483,37 @@ function _cerrarDropdown(filaId = null) {
 // ─── Filas de procesos ────────────────────────────────────
 async function renderProcesosFilas(equiposPre = null) {
   const equipos = equiposPre || await db.equipos.toArray();
+  _equiposCache = equipos;
   const contenedor = document.getElementById('procesos-filas');
   contenedor.innerHTML = procesosFilas.map(f => buildFilaProceso(f, equipos)).join('');
 }
 
 function buildFilaProceso(f, equipos) {
   const sinEquipos = equipos.length === 0;
+  const equipoActual = equipos.find(eq => eq.id == f.equipo_id);
+  const esGas = equipoActual && equipoActual.tipo_energia === 'gas';
+
   const opcionesEquipos = sinEquipos
     ? `<option value="" disabled>Sin equipos — ve a Configuración</option>`
     : equipos.map(eq =>
         `<option value="${eq.id}" ${f.equipo_id == eq.id ? 'selected' : ''}>${escapeHTML(eq.nombre)}</option>`
       ).join('');
 
+  const campoTemp = esGas
+    ? `<input
+        type="number"
+        class="proc-temp-input"
+        id="proc-temp-${f.filaId}"
+        value="${f.temperatura || ''}"
+        placeholder="°C"
+        min="0"
+        step="1"
+        onchange="handleProcTemperaturaChange(${f.filaId}, this.value)"
+      >`
+    : `<div class="proc-temp-vacio"></div>`;
+
   return `
-    <div class="proc-fila" id="fila-proc-${f.filaId}">
+    <div class="proc-fila${esGas ? ' proc-fila-gas' : ''}" id="fila-proc-${f.filaId}">
       <select
         class="proc-equipo-select"
         id="proc-equipo-${f.filaId}"
@@ -502,6 +533,7 @@ function buildFilaProceso(f, equipos) {
         step="1"
         onchange="handleProcMinutosChange(${f.filaId}, this.value)"
       >
+      ${campoTemp}
       <button class="btn-icon btn-delete proc-btn-delete" onclick="eliminarFilaProceso(${f.filaId})" title="Eliminar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="18" y1="6" x2="6" y2="18"/>
@@ -513,10 +545,12 @@ function buildFilaProceso(f, equipos) {
 
 async function agregarFilaProceso() {
   const equipos = await db.equipos.toArray();
+  _equiposCache = equipos;
   procesosFilas.push({
     filaId: _newFilaId(),
     equipo_id: equipos.length > 0 ? equipos[0].id : null,
-    minutos: ''
+    minutos: '',
+    temperatura: null
   });
   renderProcesosFilas(equipos);
 }
@@ -528,7 +562,23 @@ function eliminarFilaProceso(filaId) {
 
 function handleProcEquipoChange(filaId, val) {
   const f = procesosFilas.find(f => f.filaId === filaId);
-  if (f) f.equipo_id = parseInt(val);
+  if (!f) return;
+  f.equipo_id = parseInt(val);
+  // Si el equipo cambia de gas a eléctrico, limpiar temperatura
+  const eq = _equiposCache.find(e => e.id === f.equipo_id);
+  if (!eq || eq.tipo_energia !== 'gas') f.temperatura = null;
+  // Re-renderizar solo esta fila para mostrar/ocultar campo temperatura
+  const el = document.getElementById(`fila-proc-${filaId}`);
+  if (el) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = buildFilaProceso(f, _equiposCache);
+    el.replaceWith(tmp.firstElementChild);
+  }
+}
+
+function handleProcTemperaturaChange(filaId, val) {
+  const f = procesosFilas.find(f => f.filaId === filaId);
+  if (f) f.temperatura = val !== '' ? (parseFloat(val) || null) : null;
 }
 
 function handleProcMinutosChange(filaId, val) {
@@ -603,7 +653,7 @@ async function guardarReceta() {
       fecha_modificacion: ahora
     });
   }
-  
+
   // 3. Insertar ingredientes (solo los que tienen nombre y están vinculados)
   const ingParaGuardar = ingredientesFilas.filter(f =>
     f.nombre.trim() && f.ingrediente_catalogo_id
@@ -623,7 +673,8 @@ async function guardarReceta() {
     await db.procesos_receta.add({
       receta_id: recetaId,
       equipo_id: f.equipo_id,
-      minutos: f.minutos
+      minutos: f.minutos,
+      temperatura: f.temperatura ?? null
     });
   }
 
@@ -635,5 +686,119 @@ async function guardarReceta() {
 // ─── Init Recetario ───────────────────────────────────────
 async function initRecetario() {
   await verificarOnboarding();
+  await renderFiltrosCategorias();
   await renderRecetario();
+}
+
+// ─── Categorías ───────────────────────────────────────────
+const CATEGORIAS_DEFAULT = ['Postre', 'Comida', 'Topping', 'Salsa', 'Otro'];
+let _categoriaActiva = null; // null = todas
+
+async function getCategorias() {
+  const reg = await db.configuracion_global.get('categorias');
+  if (reg && reg.valor) {
+    try { return JSON.parse(reg.valor); } catch { /* fall through */ }
+  }
+  return [...CATEGORIAS_DEFAULT];
+}
+
+async function saveCategorias(lista) {
+  await db.configuracion_global.put({ clave: 'categorias', valor: JSON.stringify(lista) });
+}
+
+async function renderFiltrosCategorias() {
+  const cats = await getCategorias();
+  const contenedor = document.getElementById('filtros-categorias');
+  if (!contenedor) return;
+
+  contenedor.innerHTML = [
+    `<button class="filtro-chip${_categoriaActiva === null ? ' activo' : ''}" onclick="setFiltroCategoria(null)">Todas</button>`,
+    ...cats.map(c =>
+      `<button class="filtro-chip${_categoriaActiva === c ? ' activo' : ''}" onclick="setFiltroCategoria('${escapeHTML(c).replace(/'/g, "\\'")}')">
+        ${escapeHTML(c)}
+      </button>`
+    )
+  ].join('');
+}
+
+async function setFiltroCategoria(cat) {
+  _categoriaActiva = cat;
+  await renderFiltrosCategorias();
+  await renderRecetario();
+}
+
+// También actualizar el select de categorías en el formulario dinámicamente
+async function renderSelectCategorias() {
+  const cats = await getCategorias();
+  const sel = document.getElementById('rf-categoria');
+  if (!sel) return;
+  const valorActual = sel.value;
+  sel.innerHTML = cats.map(c =>
+    `<option value="${escapeHTML(c)}" ${valorActual === c ? 'selected' : ''}>${escapeHTML(c)}</option>`
+  ).join('');
+}
+
+async function renderCategoriasConfig() {
+  const cats = await getCategorias();
+  const contenedor = document.getElementById('categorias-lista');
+  if (!contenedor) return;
+
+  if (cats.length === 0) {
+    contenedor.innerHTML = '<p class="equipos-empty">Sin categorías.</p>';
+    return;
+  }
+
+  contenedor.innerHTML = cats.map((c, i) => `
+    <div class="categoria-item">
+      <span class="categoria-nombre">${escapeHTML(c)}</span>
+      <button class="btn-icon btn-delete" onclick="eliminarCategoria(${i})" title="Eliminar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>`).join('');
+}
+
+async function agregarCategoria() {
+  const input = document.getElementById('nueva-categoria-input');
+  const nombre = input.value.trim();
+  if (!nombre) return;
+
+  const cats = await getCategorias();
+  if (cats.find(c => c.toLowerCase() === nombre.toLowerCase())) {
+    mostrarToast('Ya existe esa categoría');
+    return;
+  }
+
+  cats.push(nombre);
+  await saveCategorias(cats);
+  input.value = '';
+  await renderCategoriasConfig();
+  await renderFiltrosCategorias();
+  mostrarToast('Categoría agregada');
+}
+
+async function eliminarCategoria(index) {
+  const cats = await getCategorias();
+  const nombre = cats[index];
+
+  // Verificar si hay recetas con esa categoría
+  const enUso = await db.recetas.where('categoria').equals(nombre).count();
+  if (enUso > 0) {
+    if (!confirm(`"${nombre}" está en uso por ${enUso} receta${enUso !== 1 ? 's' : ''}. ¿Eliminarla de todas formas?`)) return;
+  }
+
+  cats.splice(index, 1);
+  await saveCategorias(cats);
+
+  // Si el filtro activo era esta categoría, resetear
+  if (_categoriaActiva === nombre) {
+    _categoriaActiva = null;
+  }
+
+  await renderCategoriasConfig();
+  await renderFiltrosCategorias();
+  await renderRecetario();
+  mostrarToast('Categoría eliminada');
 }
