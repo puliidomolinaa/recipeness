@@ -239,6 +239,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
       navegarA(item.dataset.seccion);
+      if (item.dataset.seccion === 'sec-configuracion') {
+        renderCategoriasConfig();
+      }
     });
   });
 
@@ -267,4 +270,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Mostrar sección inicial
   navegarA('sec-recetario');
+
+  // Drag-to-scroll en filtros de categorías (desktop/mouse)
+  const filtrosEl = document.getElementById('filtros-categorias');
+  let isDragging = false, startX, scrollLeft;
+  filtrosEl.addEventListener('mousedown', e => {
+    isDragging = true;
+    startX = e.pageX - filtrosEl.offsetLeft;
+    scrollLeft = filtrosEl.scrollLeft;
+    filtrosEl.classList.add('dragging');
+  });
+  filtrosEl.addEventListener('mouseleave', () => { isDragging = false; filtrosEl.classList.remove('dragging'); });
+  filtrosEl.addEventListener('mouseup', () => { isDragging = false; filtrosEl.classList.remove('dragging'); });
+  filtrosEl.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    e.preventDefault();
+    filtrosEl.scrollLeft = scrollLeft - (e.pageX - filtrosEl.offsetLeft - startX);
+  });
 });
