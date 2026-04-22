@@ -55,6 +55,8 @@
     <p>Tus recetas y sus ingredientes</p>
   </div>
 
+  <div id="filtros-categorias" class="filtros-categorias"></div>
+
   <div id="recetas-empty" class="recetario-empty" style="display:none;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
       <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
@@ -109,6 +111,22 @@
   <div class="seccion-header">
     <h1>Configuración</h1>
     <p>Constantes de cálculo y equipos</p>
+  </div>
+
+  <!-- Categorías -->
+  <div class="card">
+    <div class="card-title">Categorías de recetas</div>
+    <div id="categorias-lista" class="categorias-gestion"></div>
+    <div class="categorias-nueva-row">
+      <input type="text" id="nueva-categoria-input" placeholder="Nueva categoría..." maxlength="40"
+        onkeydown="if(event.key==='Enter') agregarCategoria()">
+      <button class="btn btn-secondary" style="width:auto;padding:10px 14px;" onclick="agregarCategoria()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Constantes globales -->
