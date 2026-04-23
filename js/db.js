@@ -9,7 +9,7 @@ db.version(1).stores({
   recetas:                  '++id, nombre, categoria, fecha_creacion',
   procesos_receta:          '++id, receta_id, equipo_id',
   ingredientes_receta:      '++id, receta_id, ingrediente_catalogo_id',
-  insumos_adicionales:      '++id, presupuesto_snapshot_id',
+  insumos_adicionales:      '++id, presupuesto_snapshot_id, nombre',
   resultados_presupuesto:   '++id, receta_id, fecha'
 });
 
