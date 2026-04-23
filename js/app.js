@@ -292,3 +292,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     filtrosEl.scrollLeft = scrollLeft - (e.pageX - filtrosEl.offsetLeft - startX);
   });
 });
+}
