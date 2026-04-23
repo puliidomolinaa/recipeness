@@ -10,7 +10,7 @@ function navegarA(seccionId) {
     
   // Inicializar módulo Presupuesto al navegar
   if (seccionId === 'sec-presupuesto') {
-    iniciarPresupuesto();
+    initPresupuesto();
   }
 }
 // ─── Toast ───────────────────────────────────────────────
