@@ -12,7 +12,7 @@ function navegarA(seccionId) {
   if (seccionId === 'sec-presupuesto') {
     iniciarPresupuesto();
   }
-
+}
 // ─── Toast ───────────────────────────────────────────────
 function mostrarToast(msg) {
   const t = document.getElementById('toast');
@@ -292,4 +292,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     filtrosEl.scrollLeft = scrollLeft - (e.pageX - filtrosEl.offsetLeft - startX);
   });
 });
-}
