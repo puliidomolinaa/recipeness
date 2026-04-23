@@ -7,7 +7,11 @@ function navegarA(seccionId) {
 
   document.getElementById(seccionId).classList.add('activa');
   document.querySelector(`[data-seccion="${seccionId}"]`).classList.add('active');
-}
+    
+  // Inicializar módulo Presupuesto al navegar
+  if (seccionId === 'sec-presupuesto') {
+    iniciarPresupuesto();
+  }
 
 // ─── Toast ───────────────────────────────────────────────
 function mostrarToast(msg) {
