@@ -880,113 +880,383 @@ input:focus, select:focus, textarea:focus {
   padding-top: 14px;
   border-top: 1px solid var(--border);
   flex-wrap: wrap;
+}
 
-/* ─── Presupuesto ────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   MÓDULO 3 — PRESUPUESTO
+   ══════════════════════════════════════════════════════════ */
 
-/* ─── Presupuesto ────────────────────────────────────────── */
-.recetas-lista {
+/* ─── Stepper ────────────────────────────────────────────── */
+.presupuesto-stepper {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.presupuesto-stepper::-webkit-scrollbar { display: none; }
+
+.stepper-step {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
 }
-.receta-item-seleccion {
-  padding: 14px;
+.stepper-dot {
+  width: 24px; height: 24px;
+  border-radius: 50%;
   background: var(--bg-input);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.receta-item-seleccion:active {
-  background: var(--border);
-  border-color: var(--accent);
-}
-.receta-nombre {
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--ink);
-}
-.receta-meta {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-3);
-  margin-top: 2px;
-}
-
-.ingrediente-precio-item {
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-}
-.ingrediente-precio-item:last-child {
-  border-bottom: none;
-}
-
-.insumo-item:last-child {
-  border-bottom: none !important;
-}
-
-/* Zona imprimible de resultados */
-.resultados-zona-imprimible {
-  margin-bottom: 24px;
-}
-
-.resultado-linea {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  font-size: 14px;
-  color: var(--ink-2);
+  justify-content: center;
   font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  transition: all 0.2s;
 }
-.resultado-linea:not(:last-child) {
-  border-bottom: 1px solid var(--border);
+.stepper-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+.stepper-step.activo .stepper-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 500;
+}
+.stepper-step.activo .stepper-label { color: var(--accent); }
+.stepper-step.completado .stepper-dot {
+  background: var(--dark-bg);
+  border-color: var(--dark-bg);
+  color: var(--gold);
+}
+.stepper-step.completado .stepper-label { color: var(--ink-2); }
+
+.stepper-line {
+  flex: 1;
+  height: 1.5px;
+  background: var(--border);
+  margin: 0 4px;
+  margin-bottom: 14px; /* alinear con dot */
+  min-width: 12px;
 }
 
-.resultados-principales {
-  background: var(--accent-light);
-  border-color: var(--accent);
+/* ─── Pasos del presupuesto ──────────────────────────────── */
+.presupuesto-paso {
+  display: none;
 }
-.resultado-principal {
+.presupuesto-paso.activo {
+  display: block;
+}
+
+/* Footer por paso */
+.presupuesto-footer-paso {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+}
+.presupuesto-footer-paso[data-paso].visible {
+  display: flex;
+}
+
+/* ─── Paso 1: Lista de selección de receta ───────────────── */
+.recetas-seleccion-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.receta-seleccion-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(196,80,26,0.2);
+  width: 100%;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  background: none;
+  cursor: pointer;
+  transition: background 0.1s;
 }
-.resultado-principal:last-child {
-  border-bottom: none;
+.receta-seleccion-item:first-child { border-top: 1.5px solid var(--border); }
+.receta-seleccion-item:active { background: var(--bg-input); }
+.receta-seleccion-nombre {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  flex: 1;
 }
-.resultado-icono {
-  font-size: 24px;
+.receta-seleccion-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.receta-seleccion-chevron {
+  width: 16px; height: 16px;
+  color: var(--ink-3);
   flex-shrink: 0;
 }
-.resultado-label {
-  font-size: 12px;
-  color: var(--ink-2);
+
+/* ─── Cabecera de paso ───────────────────────────────────── */
+.paso-header {
+  margin-bottom: 16px;
+}
+.paso-receta-nombre {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
   margin-bottom: 2px;
 }
-.resultado-valor {
-  font-size: 20px;
+.paso-subtitulo {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* ─── Paso 3: Precio de ingredientes ────────────────────── */
+.ing-precio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.ing-precio-nombre {
   font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.ing-precio-necesita {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  margin-left: 8px;
+}
+.ing-precio-costo-unitario {
+  font-family: var(--font-mono);
+  font-size: 12px;
   color: var(--accent);
+  margin-top: 6px;
+}
+
+/* ─── Paso 4: Mano de obra ───────────────────────────────── */
+.mano-obra-preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ink-2);
   font-family: var(--font-mono);
 }
+.mano-obra-valor {
+  font-weight: 500;
+  color: var(--ink);
+}
 
-.resultados-acciones {
-  margin-top: 20px;
+.insumos-empty {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+  padding: 8px 0;
+}
+.insumo-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.insumo-item:last-child { border-bottom: none; }
+.insumo-footer-row {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+.insumo-subtotal {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* ─── Formulario: hint ───────────────────────────────────── */
+.form-hint {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+  margin-top: -4px;
+}
+
+/* ─── Paso 5: Resultados ─────────────────────────────────── */
+.res-header {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1.5px solid var(--border);
+}
+.res-receta-nombre {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.res-meta-row {
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
-
-@media print {
-  .resultados-acciones,
-  .nav-bottom {
-    display: none !important;
-  }
-  .resultados-zona-imprimible {
-    margin: 0;
-    padding: 0;
-  }
+.res-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
+.res-fecha {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* Tarjeta de resumen principal */
+.res-resumen-card {
+  background: var(--dark-bg) !important;
+  border-color: var(--dark-bg) !important;
+  display: flex;
+  gap: 0;
+  padding: 0 !important;
+  overflow: hidden;
+}
+.res-metrica {
+  flex: 1;
+  padding: 16px 12px;
+  text-align: center;
+}
+.res-metrica-acento {
+  background: var(--accent);
+}
+.res-divisor {
+  width: 1px;
+  background: rgba(255,255,255,0.12);
+  flex-shrink: 0;
+}
+.res-metrica-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 6px;
+}
+.res-metrica-valor {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+}
+.res-metrica-acento-valor {
+  font-size: 20px;
+  font-weight: 600;
+}
+.res-metrica-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 3px;
+}
+
+/* Desglose por grupo */
+.desglose-grupo {
+  margin-bottom: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.desglose-grupo:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.desglose-grupo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 6px;
+}
+.desglose-grupo-titulo {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.desglose-grupo-total {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.desglose-items {
+  padding-left: 8px;
+}
+.desglose-linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+}
+.desglose-nombre {
+  font-size: 13px;
+  color: var(--ink-2);
+  flex: 1;
+}
+.desglose-valor {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  margin-left: 12px;
+}
+.desglose-vacio {
+  font-size: 13px;
+  color: var(--ink-3);
+  padding: 4px 0;
+}
+
+/* Fila de total */
+.desglose-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0 2px;
+  border-top: 2px solid var(--border-dark);
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.desglose-total-valor {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Tarjeta de contexto */
+.res-contexto-card {
+  background: var(--bg-input) !important;
+  border-color: var(--border) !important;
+}
+
