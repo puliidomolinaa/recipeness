@@ -82,9 +82,16 @@
 <section id="sec-presupuesto" class="seccion">
   <div class="seccion-header">
     <h1>Presupuesto</h1>
-    <p>Estimaciones de gastos</p>
+    <p>Calculá el costo de producción de una receta</p>
   </div>
-  <div id="presupuesto-container"></div>
+  <button class="btn btn-primary" onclick="initPresupuesto()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <line x1="8" y1="21" x2="16" y2="21"/>
+      <line x1="12" y1="17" x2="12" y2="21"/>
+    </svg>
+    Nuevo presupuesto
+  </button>
 </section>
   
 <!-- ─── Sección: Historial ────────────────────────────── -->
@@ -382,6 +389,243 @@
     </button>
     <button class="btn btn-secondary" onclick="cerrarFormulario()">Cancelar</button>
   </div>
+</div>
+
+
+<!-- ─── Panel de Presupuesto ──────────────────────────────── -->
+<div id="presupuesto-panel" class="panel-fullscreen">
+
+  <div class="panel-header">
+    <button class="btn-icon btn-back" onclick="cerrarPanelPresupuesto()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <h2 class="panel-titulo">Presupuesto</h2>
+    <div style="width:36px;"></div>
+  </div>
+
+  <div class="presupuesto-stepper">
+    <div class="stepper-step" data-step="1"><div class="stepper-dot">1</div><span class="stepper-label">Receta</span></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="2"><div class="stepper-dot">2</div><span class="stepper-label">Ajustes</span></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="3"><div class="stepper-dot">3</div><span class="stepper-label">Ingredientes</span></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="4"><div class="stepper-dot">4</div><span class="stepper-label">M. de obra</span></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="5"><div class="stepper-dot">5</div><span class="stepper-label">Resultado</span></div>
+  </div>
+
+  <div class="panel-body" id="presupuesto-panel-body">
+
+    <!-- PASO 1 -->
+    <div class="presupuesto-paso" data-paso="1">
+      <div class="paso-header">
+        <p class="paso-subtitulo">Seleccioná la receta que vas a presupuestar</p>
+      </div>
+      <div id="p1-recetas-empty" class="recetario-empty" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="2"/>
+        </svg>
+        <p>No hay recetas todavía.</p>
+        <p class="recetario-empty-sub">Crea una receta primero.</p>
+      </div>
+      <div id="p1-recetas-lista" class="recetas-seleccion-lista"></div>
+    </div>
+
+    <!-- PASO 2 -->
+    <div class="presupuesto-paso" data-paso="2">
+      <div class="paso-header">
+        <p id="p2-receta-nombre" class="paso-receta-nombre"></p>
+        <p class="paso-subtitulo">Ajustá las porciones y los precios de energía</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Producción</div>
+        <div class="form-row">
+          <label for="p2-porciones">Porciones a calcular</label>
+          <input type="number" id="p2-porciones" min="1" step="1" placeholder="1">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Precios de energía</div>
+        <div class="form-row">
+          <label for="p2-precio-gas">Gas (por litro)</label>
+          <input type="number" id="p2-precio-gas" min="0" step="any" placeholder="0.00">
+        </div>
+        <div class="form-row">
+          <label for="p2-precio-kwh">Electricidad (kWh)</label>
+          <input type="number" id="p2-precio-kwh" min="0" step="any" placeholder="0.00">
+        </div>
+        <p class="form-hint">Precargado desde Configuración. Modificá si cambió hoy.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Margen</div>
+        <div class="form-row">
+          <label for="p2-margen">Margen de ganancia (%)</label>
+          <input type="number" id="p2-margen" min="0" step="1" placeholder="30">
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div class="presupuesto-paso" data-paso="3">
+      <div class="paso-header">
+        <p class="paso-subtitulo">Ingresá el precio del paquete de cada ingrediente</p>
+      </div>
+      <div id="p3-sin-ingredientes" class="aviso-info" style="display:none;">
+        Esta receta no tiene ingredientes. Continuá al siguiente paso.
+      </div>
+      <div class="card">
+        <div id="p3-ingredientes-lista"></div>
+      </div>
+    </div>
+
+    <!-- PASO 4 -->
+    <div class="presupuesto-paso" data-paso="4">
+      <div class="paso-header">
+        <p class="paso-subtitulo">Registrá el tiempo trabajado y los insumos de empaque</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Mano de obra</div>
+        <div class="form-row-inline">
+          <div>
+            <label for="p4-horas">Horas trabajadas</label>
+            <input type="number" id="p4-horas" min="0" step="0.5" placeholder="0" oninput="actualizarManoObra()">
+          </div>
+          <div>
+            <label for="p4-tarifa">Tarifa por hora</label>
+            <input type="number" id="p4-tarifa" min="0" step="any" placeholder="0" oninput="actualizarManoObra()">
+          </div>
+        </div>
+        <div class="mano-obra-preview">
+          <span>Total mano de obra</span>
+          <span id="p4-mano-obra-total" class="mano-obra-valor">$0</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Insumos adicionales</div>
+        <div id="p4-insumos-lista"></div>
+        <button class="btn btn-secondary" style="margin-top:14px" onclick="agregarInsumo()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Agregar insumo
+        </button>
+      </div>
+    </div>
+
+    <!-- PASO 5 -->
+    <div class="presupuesto-paso" data-paso="5">
+      <div class="res-header">
+        <h2 id="res-receta-nombre" class="res-receta-nombre"></h2>
+        <div class="res-meta-row">
+          <span id="res-porciones" class="res-badge"></span>
+          <span id="res-fecha" class="res-fecha"></span>
+        </div>
+      </div>
+
+      <div class="card res-resumen-card">
+        <div class="res-metrica">
+          <div class="res-metrica-label">Costo por pieza</div>
+          <div id="res-costo-individual" class="res-metrica-valor"></div>
+        </div>
+        <div class="res-divisor"></div>
+        <div class="res-metrica res-metrica-acento">
+          <div class="res-metrica-label">Precio mínimo sugerido</div>
+          <div id="res-precio-minimo" class="res-metrica-valor res-metrica-acento-valor"></div>
+          <div id="res-margen-label" class="res-metrica-sub"></div>
+        </div>
+        <div class="res-divisor"></div>
+        <div class="res-metrica">
+          <div class="res-metrica-label">Ganancia por pieza</div>
+          <div id="res-ganancia-pieza" class="res-metrica-valor"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Desglose de costos</div>
+        <div class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Ingredientes</span>
+            <span id="res-ingredientes-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-ingredientes-desglose" class="desglose-items"></div>
+        </div>
+        <div id="res-energia-seccion" class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Energía</span>
+            <span id="res-energia-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-energia-desglose" class="desglose-items"></div>
+        </div>
+        <div id="res-mo-seccion" class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Mano de obra</span>
+            <span id="res-mo-total" class="desglose-grupo-total"></span>
+          </div>
+          <div class="desglose-items">
+            <div class="desglose-linea">
+              <span id="res-mo-detalle" class="desglose-nombre"></span>
+            </div>
+          </div>
+        </div>
+        <div id="res-insumos-seccion" class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Insumos adicionales</span>
+            <span id="res-insumos-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-insumos-desglose" class="desglose-items"></div>
+        </div>
+        <div class="desglose-total-row">
+          <span>Total producción</span>
+          <span id="res-costo-total" class="desglose-total-valor"></span>
+        </div>
+      </div>
+
+      <div class="card res-contexto-card">
+        <div class="card-title">Valores usados</div>
+        <div class="resultado-linea"><span>Gas</span><span id="res-ctx-gas"></span></div>
+        <div class="resultado-linea"><span>Electricidad</span><span id="res-ctx-kwh"></span></div>
+        <div class="resultado-linea"><span>Margen aplicado</span><span id="res-ctx-margen"></span></div>
+      </div>
+
+      <div style="height:12px;"></div>
+    </div>
+
+  </div><!-- /panel-body -->
+
+  <div class="panel-footer" id="presupuesto-panel-footer">
+    <div class="presupuesto-footer-paso" data-paso="2">
+      <button class="btn btn-primary" onclick="confirmarPaso2()">Continuar</button>
+      <button class="btn btn-secondary" onclick="mostrarPaso(1)">Volver</button>
+    </div>
+    <div class="presupuesto-footer-paso" data-paso="3">
+      <button class="btn btn-primary" id="p3-btn-continuar" disabled onclick="renderPaso4()">Continuar</button>
+      <button class="btn btn-secondary" onclick="mostrarPaso(2)">Volver</button>
+    </div>
+    <div class="presupuesto-footer-paso" data-paso="4">
+      <button class="btn btn-primary" onclick="calcularResultados()">Calcular</button>
+      <button class="btn btn-secondary" onclick="mostrarPaso(3)">Volver</button>
+    </div>
+    <div class="presupuesto-footer-paso" data-paso="5">
+      <button class="btn btn-primary" onclick="guardarEnHistorial()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Guardar en historial
+      </button>
+      <div class="backup-row">
+        <button class="btn btn-secondary" onclick="volverAPaso4()">Volver a editar</button>
+        <button class="btn btn-secondary" onclick="nuevoPresupuesto()">Nuevo</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ─── Toast ─────────────────────────────────────────── -->
