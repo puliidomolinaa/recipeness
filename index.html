@@ -183,6 +183,18 @@
     </button>
   </div>
 
+  <!-- Insumos catálogo -->
+  <div class="card">
+    <div class="card-title">Insumos de empaque</div>
+    <div id="insumos-catalogo-lista"></div>
+    <button class="btn btn-secondary" style="margin-top:14px" onclick="abrirModalInsumoCatalogo()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Agregar insumo
+    </button>
+  </div>
+
   <!-- Respaldo -->
   <div class="divider-label">Respaldo de datos</div>
   <div class="backup-row">
@@ -527,6 +539,41 @@
         </div>
       </div>
 
+      <!-- Inversión inicial -->
+      <div class="card">
+        <div class="card-title">Inversión inicial</div>
+        <p class="form-hint" style="margin-bottom:12px">Cuánto necesitás gastar para arrancar desde cero — paquetes completos de ingredientes e insumos.</p>
+        <div class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Ingredientes (paquetes)</span>
+            <span id="res-inv-ingredientes-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-inv-ingredientes" class="desglose-items"></div>
+        </div>
+        <div id="res-inv-insumos-seccion" class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Insumos (paquetes)</span>
+            <span id="res-inv-insumos-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-inv-insumos" class="desglose-items"></div>
+        </div>
+        <div class="desglose-total-row">
+          <span>Total inversión</span>
+          <span id="res-inversion-total" class="desglose-total-valor"></span>
+        </div>
+        <div class="inv-ganancia-bloque">
+          <div class="inv-ganancia-linea">
+            <span>Venta total a precio mínimo</span>
+            <span id="res-venta-total"></span>
+          </div>
+          <div class="inv-ganancia-linea inv-ganancia-resultado">
+            <span>Ganancia desde cero</span>
+            <span id="res-ganancia-desde-cero"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen por pieza -->
       <div class="card res-resumen-card">
         <div class="res-metrica">
           <div class="res-metrica-label">Costo por pieza</div>
