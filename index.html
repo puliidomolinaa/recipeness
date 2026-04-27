@@ -84,11 +84,18 @@
     <h1>Presupuesto</h1>
     <p>Calculá el costo de producción de una receta</p>
   </div>
+  <!-- Aviso configuración sin guardar -->
+  <div id="aviso-config-sin-guardar" class="aviso-warning" style="display:none;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <span>Tenés cambios sin guardar en Configuración. Los presupuestos usarán los valores anteriores.</span>
+    <button class="aviso-btn" onclick="navegarA('sec-configuracion')">Ir a Configuración</button>
+  </div>
   <button class="btn btn-primary" onclick="initPresupuesto()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <rect x="2" y="3" width="20" height="14" rx="2"/>
-      <line x1="8" y1="21" x2="16" y2="21"/>
-      <line x1="12" y1="17" x2="12" y2="21"/>
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
     Nuevo presupuesto
   </button>
@@ -519,13 +526,21 @@
       <div class="card">
         <div class="card-title">Insumos adicionales</div>
         <div id="p4-insumos-lista"></div>
-        <button class="btn btn-secondary" style="margin-top:14px" onclick="agregarInsumo()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Agregar insumo
-        </button>
+        <div class="backup-row" style="margin-top:14px">
+          <button class="btn btn-secondary" onclick="abrirSelectorInsumos()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Del catálogo
+          </button>
+          <button class="btn btn-secondary" onclick="agregarInsumoManual()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Manual
+          </button>
+        </div>
       </div>
     </div>
 
@@ -550,6 +565,9 @@
           </div>
           <div id="res-inv-ingredientes" class="desglose-items"></div>
         </div>
+        <!-- Subtotal solo ingredientes (útil para muestras/eventos sin insumos) -->
+        <div id="res-inv-solo-ingredientes" class="desglose-inv-solo" style="display:none;"></div>
+
         <div id="res-inv-insumos-seccion" class="desglose-grupo">
           <div class="desglose-grupo-header">
             <span class="desglose-grupo-titulo">Insumos (paquetes)</span>
@@ -613,11 +631,7 @@
             <span class="desglose-grupo-titulo">Mano de obra</span>
             <span id="res-mo-total" class="desglose-grupo-total"></span>
           </div>
-          <div class="desglose-items">
-            <div class="desglose-linea">
-              <span id="res-mo-detalle" class="desglose-nombre"></span>
-            </div>
-          </div>
+          <div id="res-mo-desglose" class="desglose-items"></div>
         </div>
         <div id="res-insumos-seccion" class="desglose-grupo">
           <div class="desglose-grupo-header">
@@ -673,6 +687,16 @@
     </div>
   </div>
 
+</div>
+
+<!-- ─── Modal selector de insumos ────────────────────────── -->
+<div id="insumos-selector-overlay" class="modal-overlay" onclick="cerrarSelectorInsumos(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Seleccionar insumo</div>
+    <div id="insumos-selector-lista" style="margin-bottom:16px"></div>
+    <button class="btn btn-secondary" onclick="cerrarSelectorInsumos()">Cancelar</button>
+  </div>
 </div>
 
 <!-- ─── Toast ─────────────────────────────────────────── -->
