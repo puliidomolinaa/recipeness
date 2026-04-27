@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calc-emp-v3';
+const CACHE_NAME = 'calc-emp-v4';
 const ASSETS = [
   '/recipeness/',
   '/recipeness/index.html',
@@ -6,6 +6,7 @@ const ASSETS = [
   '/recipeness/js/app.js',
   '/recipeness/js/db.js',
   '/recipeness/js/recetario.js',
+  '/recipeness/js/presupuesto.js',
   '/recipeness/js/backup.js',
   '/recipeness/manifest.json',
   '/recipeness/icons/icon-192.svg',
