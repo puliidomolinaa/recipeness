@@ -1422,3 +1422,8 @@ input:focus, select:focus, textarea:focus {
   max-height: none;
   flex: none;
 }
+
+/* ─── Selector de insumos: z-index por encima del panel ──── */
+#insumos-selector-overlay {
+  z-index: 400;
+}
