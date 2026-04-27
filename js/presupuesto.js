@@ -8,10 +8,10 @@ let presupuestoState = {
   precioGas: 0,
   precioKwh: 0,
   margen: 30,
-  ingredientesConPrecio: [],   // [{nombre, cantidadNecesaria, unidad, precioPaquete, cantidadPaquete}]
+  ingredientesConPrecio: [],
   horasTrabajadas: 0,
   tarifaHora: 0,
-  insumosAdicionales: [],      // [{id, nombre, costoPorPieza}]
+  insumosAdicionales: [],
   resultados: null
 };
 
@@ -22,23 +22,20 @@ function initPresupuesto() {
 
 // ─── Navegación de pasos ──────────────────────────────────
 function mostrarPaso(n) {
-  // Sincronizar footer
   document.querySelectorAll('.presupuesto-footer-paso').forEach(el => {
-    el.style.display = parseInt(el.dataset.paso) === n ? 'flex' : 'none';
-    el.style.flexDirection = 'column';
-    el.style.gap = '8px';
+    const visible = parseInt(el.dataset.paso) === n;
+    el.style.display = visible ? 'flex' : 'none';
+    if (visible) { el.style.flexDirection = 'column'; el.style.gap = '8px'; }
   });
   presupuestoState.paso = n;
   document.querySelectorAll('.presupuesto-paso').forEach(el => {
     el.classList.toggle('activo', parseInt(el.dataset.paso) === n);
   });
-  // Actualizar stepper
   document.querySelectorAll('.stepper-step').forEach(el => {
     const num = parseInt(el.dataset.step);
     el.classList.toggle('completado', num < n);
     el.classList.toggle('activo', num === n);
   });
-  // Scroll al tope del panel
   const body = document.getElementById('presupuesto-panel-body');
   if (body) body.scrollTop = 0;
 }
@@ -74,10 +71,8 @@ async function renderPaso1() {
 async function seleccionarReceta(id) {
   const receta = await db.recetas.get(id);
   if (!receta) return;
-
   presupuestoState.receta = receta;
   presupuestoState.porciones = receta.porciones_base || 1;
-
   const [gas, kwh, margen] = await Promise.all([
     db.configuracion_global.get('precio_gas'),
     db.configuracion_global.get('precio_kwh'),
@@ -86,20 +81,17 @@ async function seleccionarReceta(id) {
   presupuestoState.precioGas = gas?.valor || 0;
   presupuestoState.precioKwh = kwh?.valor || 0;
   presupuestoState.margen = margen?.valor || 30;
-
   await renderPaso2();
 }
 
-// ─── Paso 2: Porciones y precios energéticos ─────────────
+// ─── Paso 2: Ajustes ──────────────────────────────────────
 async function renderPaso2() {
   const r = presupuestoState.receta;
-
   document.getElementById('p2-receta-nombre').textContent = r.nombre;
   document.getElementById('p2-porciones').value = presupuestoState.porciones;
   document.getElementById('p2-precio-gas').value = presupuestoState.precioGas;
   document.getElementById('p2-precio-kwh').value = presupuestoState.precioKwh;
   document.getElementById('p2-margen').value = presupuestoState.margen;
-
   mostrarPaso(2);
 }
 
@@ -108,17 +100,13 @@ async function confirmarPaso2() {
   presupuestoState.precioGas = parseFloat(document.getElementById('p2-precio-gas').value) || 0;
   presupuestoState.precioKwh = parseFloat(document.getElementById('p2-precio-kwh').value) || 0;
   presupuestoState.margen = parseFloat(document.getElementById('p2-margen').value) ?? 30;
-
   await renderPaso3();
 }
 
 // ─── Paso 3: Precios de ingredientes ─────────────────────
 async function renderPaso3() {
   const r = presupuestoState.receta;
-  const ingredientes = await db.ingredientes_receta
-    .where('receta_id').equals(r.id)
-    .toArray();
-
+  const ingredientes = await db.ingredientes_receta.where('receta_id').equals(r.id).toArray();
   const lista = document.getElementById('p3-ingredientes-lista');
   const avisoCero = document.getElementById('p3-sin-ingredientes');
 
@@ -126,13 +114,12 @@ async function renderPaso3() {
     lista.innerHTML = '';
     avisoCero.style.display = 'block';
     presupuestoState.ingredientesConPrecio = [];
+    document.getElementById('p3-btn-continuar').disabled = false;
     mostrarPaso(3);
     return;
   }
 
   avisoCero.style.display = 'none';
-
-  // Calcular cantidades escaladas
   const escala = presupuestoState.porciones / r.porciones_base;
   const ingsEscalados = [];
   for (const ing of ingredientes) {
@@ -145,7 +132,6 @@ async function renderPaso3() {
       cantidadPaquete: 0
     });
   }
-
   presupuestoState.ingredientesConPrecio = ingsEscalados;
 
   lista.innerHTML = ingsEscalados.map((ing, i) => `
@@ -157,25 +143,19 @@ async function renderPaso3() {
       <div class="form-row-inline">
         <div>
           <label style="font-size:12px">Precio del paquete</label>
-          <input type="number" class="precio-paquete-input" data-index="${i}"
-            min="0" step="any" placeholder="ej: 350">
+          <input type="number" class="precio-paquete-input" data-index="${i}" min="0" step="any" placeholder="ej: 350">
         </div>
         <div>
-          <label style="font-size:12px">Cantidad del paquete (${escapeHTML(ing.unidad) || 'u'})</label>
-          <input type="number" class="cantidad-paquete-input" data-index="${i}"
-            min="0" step="any" placeholder="ej: 1000">
+          <label style="font-size:12px">Cantidad en el paquete (${escapeHTML(ing.unidad) || 'u'})</label>
+          <input type="number" class="cantidad-paquete-input" data-index="${i}" min="0" step="any" placeholder="ej: 1000">
         </div>
       </div>
       <div class="ing-precio-costo-unitario" id="costo-unitario-${i}" style="display:none"></div>
     </div>`).join('');
 
-  // Eventos para validación en tiempo real
   lista.querySelectorAll('.precio-paquete-input, .cantidad-paquete-input').forEach(input => {
-    input.addEventListener('input', () => {
-      validarYActualizarPaso3();
-    });
+    input.addEventListener('input', validarYActualizarPaso3);
   });
-
   document.getElementById('p3-btn-continuar').disabled = true;
   mostrarPaso(3);
 }
@@ -183,13 +163,12 @@ async function renderPaso3() {
 function validarYActualizarPaso3() {
   const precios = document.querySelectorAll('.precio-paquete-input');
   const cantidades = document.querySelectorAll('.cantidad-paquete-input');
-  let todoValido = true;
+  let todoValido = precios.length > 0;
 
   precios.forEach((input, i) => {
     const precio = parseFloat(input.value);
     const cantidad = parseFloat(cantidades[i].value);
     const valido = precio > 0 && cantidad > 0;
-
     if (!valido) {
       todoValido = false;
       const display = document.getElementById(`costo-unitario-${i}`);
@@ -205,7 +184,6 @@ function validarYActualizarPaso3() {
       }
     }
   });
-
   document.getElementById('p3-btn-continuar').disabled = !todoValido;
 }
 
@@ -217,7 +195,17 @@ async function renderPaso4() {
   ]);
   presupuestoState.tarifaHora = (salario?.valor || 0) * (multiplicador?.valor || 2);
   presupuestoState.horasTrabajadas = 0;
-  presupuestoState.insumosAdicionales = [];
+
+  // Precargar insumos del catálogo con su costo por pieza calculado
+  const catalogoInsumos = await db.insumos_catalogo.toArray();
+  presupuestoState.insumosAdicionales = catalogoInsumos.map(ins => ({
+    id: ins.id,
+    nombre: ins.nombre,
+    costoPorPieza: ins.piezas > 0 ? ins.precio_paquete / ins.piezas : 0,
+    precioPaquete: ins.precio_paquete,
+    piezasPorPaquete: ins.piezas,
+    esDeCatalogo: true
+  }));
 
   document.getElementById('p4-horas').value = 0;
   document.getElementById('p4-tarifa').value = presupuestoState.tarifaHora;
@@ -231,14 +219,13 @@ function actualizarManoObra() {
   const tarifa = parseFloat(document.getElementById('p4-tarifa')?.value) || 0;
   presupuestoState.horasTrabajadas = horas;
   presupuestoState.tarifaHora = tarifa;
-
   const total = horas * tarifa;
   const display = document.getElementById('p4-mano-obra-total');
   if (display) display.textContent = `$${total.toFixed(2)}`;
 }
 
 function agregarInsumo() {
-  presupuestoState.insumosAdicionales.push({ id: Date.now(), nombre: '', costoPorPieza: 0 });
+  presupuestoState.insumosAdicionales.push({ id: Date.now(), nombre: '', costoPorPieza: 0, esDeCatalogo: false });
   renderInsumosLista();
 }
 
@@ -247,30 +234,41 @@ function renderInsumosLista() {
   if (!lista) return;
 
   if (presupuestoState.insumosAdicionales.length === 0) {
-    lista.innerHTML = '<p class="insumos-empty">Sin insumos adicionales</p>';
+    lista.innerHTML = '<p class="insumos-empty">Sin insumos. Agregá manualmente o configurá en Configuración.</p>';
     return;
   }
 
   lista.innerHTML = presupuestoState.insumosAdicionales.map((insumo, i) => {
     const subtotal = insumo.costoPorPieza * presupuestoState.porciones;
+    const badgeCatalogo = insumo.esDeCatalogo
+      ? `<span class="insumo-badge-catalogo">del catálogo</span>`
+      : '';
     return `
       <div class="insumo-item">
-        <div class="form-row-inline" style="margin-bottom:6px">
-          <div>
-            <label style="font-size:12px">Nombre</label>
-            <input type="text" value="${escapeHTML(insumo.nombre)}"
-              oninput="actualizarInsumo(${i}, 'nombre', this.value)"
-              placeholder="Ej: Caja, etiqueta">
-          </div>
+        <div class="insumo-nombre-row">
+          <span class="insumo-nombre-label">${escapeHTML(insumo.nombre) || '(sin nombre)'}</span>
+          ${badgeCatalogo}
+        </div>
+        <div class="form-row-inline" style="margin-top:8px">
           <div>
             <label style="font-size:12px">Costo por pieza</label>
             <input type="number" value="${insumo.costoPorPieza}" min="0" step="any"
               oninput="actualizarInsumo(${i}, 'costo', parseFloat(this.value) || 0)">
           </div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:2px">
+            <span class="insumo-subtotal">× ${presupuestoState.porciones} = $${subtotal.toFixed(2)}</span>
+          </div>
         </div>
-        <div class="insumo-footer-row">
-          <span class="insumo-subtotal">Subtotal (${presupuestoState.porciones} piezas): $${subtotal.toFixed(2)}</span>
-          <button class="btn-icon btn-delete" onclick="eliminarInsumo(${i})" title="Eliminar">
+        ${!insumo.esDeCatalogo ? `
+        <div style="margin-top:6px">
+          <label style="font-size:12px">Nombre</label>
+          <input type="text" value="${escapeHTML(insumo.nombre)}"
+            oninput="actualizarInsumo(${i}, 'nombre', this.value)"
+            placeholder="Ej: Caja, Etiqueta...">
+        </div>` : ''}
+        <div class="insumo-footer-row" style="margin-top:8px">
+          <span></span>
+          <button class="btn-icon btn-delete" onclick="eliminarInsumo(${i})" title="Quitar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -295,72 +293,76 @@ function eliminarInsumo(index) {
   renderInsumosLista();
 }
 
-// ─── Resultados ───────────────────────────────────────────
+// ─── Cálculo de resultados ────────────────────────────────
 async function calcularResultados() {
   const r = presupuestoState.receta;
 
-  // Costo de ingredientes con desglose por ítem
-  let subtotalIngredientes = 0;
+  // Ingredientes: costo prorrateado (uso real) vs inversión (paquete completo)
+  let subtotalIngredientesProrateado = 0;
+  let subtotalIngredientesInversion = 0;
   const detalleIngredientes = presupuestoState.ingredientesConPrecio.map(ing => {
-    const costo = ing.cantidadPaquete > 0
+    const costoPorUso = ing.cantidadPaquete > 0
       ? (ing.cantidadNecesaria / ing.cantidadPaquete) * ing.precioPaquete
       : 0;
-    subtotalIngredientes += costo;
-    return { nombre: ing.nombre, costo };
+    subtotalIngredientesProrateado += costoPorUso;
+    subtotalIngredientesInversion += ing.precioPaquete;
+    return { nombre: ing.nombre, costo: costoPorUso, costoInversion: ing.precioPaquete };
   });
 
-  // Costo energético con desglose por proceso
+  // Energía
   let subtotalEnergia = 0;
   const detalleEnergia = [];
   const procesos = await db.procesos_receta.where('receta_id').equals(r.id).toArray();
-
   for (const proceso of procesos) {
     if (!proceso.equipo_id) continue;
     const equipo = await db.equipos.get(proceso.equipo_id);
     if (!equipo) continue;
-
     let costo = 0;
-    let detalle = '';
     if (equipo.tipo_energia === 'gas') {
       costo = (equipo.consumo_unitario / 60) * proceso.minutos * presupuestoState.precioGas;
-      detalle = `${equipo.nombre} · ${proceso.minutos}min`;
     } else if (equipo.tipo_energia === 'electrico') {
       costo = (equipo.consumo_unitario / 1000 / 60) * proceso.minutos * presupuestoState.precioKwh;
-      detalle = `${equipo.nombre} · ${proceso.minutos}min`;
     }
     subtotalEnergia += costo;
-    detalleEnergia.push({ nombre: detalle, costo });
+    detalleEnergia.push({ nombre: `${equipo.nombre} · ${proceso.minutos}min`, costo });
   }
 
   // Mano de obra
   const manoDeObra = presupuestoState.horasTrabajadas * presupuestoState.tarifaHora;
 
-  // Insumos adicionales
-  const subtotalInsumos = presupuestoState.insumosAdicionales.reduce((sum, ins) => {
-    return sum + (ins.costoPorPieza * presupuestoState.porciones);
-  }, 0);
+  // Insumos
+  let subtotalInsumosCorrida = 0;
+  let subtotalInsumosInversion = 0;
   const detalleInsumos = presupuestoState.insumosAdicionales
-    .filter(ins => ins.nombre.trim())
-    .map(ins => ({ nombre: ins.nombre, costo: ins.costoPorPieza * presupuestoState.porciones }));
+    .filter(ins => ins.nombre.trim() || ins.esDeCatalogo)
+    .map(ins => {
+      const costoCorrida = ins.costoPorPieza * presupuestoState.porciones;
+      subtotalInsumosCorrida += costoCorrida;
+      const costoInversion = ins.esDeCatalogo ? (ins.precioPaquete || costoCorrida) : costoCorrida;
+      subtotalInsumosInversion += costoInversion;
+      return { nombre: ins.nombre, costo: costoCorrida, costoInversion };
+    });
 
-  // Totales
-  const costoTotal = subtotalIngredientes + subtotalEnergia + manoDeObra + subtotalInsumos;
-  const costoIndividual = costoTotal / presupuestoState.porciones;
+  // Por pieza
+  const costoProduccionTotal = subtotalIngredientesProrateado + subtotalEnergia + manoDeObra + subtotalInsumosCorrida;
+  const costoIndividual = costoProduccionTotal / presupuestoState.porciones;
   const precioMinimo = costoIndividual * (1 + presupuestoState.margen / 100);
   const gananciaPorPieza = precioMinimo - costoIndividual;
 
+  // Inversión inicial (paquetes completos de ingredientes e insumos; energía no aplica)
+  const inversionInicial = subtotalIngredientesInversion + subtotalInsumosInversion;
+  const ventaTotalAPrecioMinimo = precioMinimo * presupuestoState.porciones;
+  // Ganancia desde cero = lo que entra - lo que costó todo para arrancar (incluyendo energía y MO)
+  const gananciaDesdeCero = ventaTotalAPrecioMinimo - inversionInicial - subtotalEnergia - manoDeObra;
+
   presupuestoState.resultados = {
-    subtotalIngredientes,
-    subtotalEnergia,
-    manoDeObra,
-    subtotalInsumos,
-    costoTotal,
-    costoIndividual,
-    precioMinimo,
-    gananciaPorPieza,
-    detalleIngredientes,
-    detalleEnergia,
-    detalleInsumos
+    subtotalIngredientesProrateado, subtotalIngredientesInversion,
+    subtotalEnergia, manoDeObra,
+    subtotalInsumosCorrida, subtotalInsumosInversion,
+    costoProduccionTotal, costoIndividual,
+    precioMinimo, gananciaPorPieza,
+    inversionInicial, ventaTotalAPrecioMinimo, gananciaDesdeCero,
+    detalleIngredientes, detalleEnergia, detalleInsumos
   };
 
   renderResultados();
@@ -371,36 +373,49 @@ function renderResultados() {
   const res = presupuestoState.resultados;
   const fecha = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
 
-  // Header
   document.getElementById('res-receta-nombre').textContent = r.nombre;
   document.getElementById('res-fecha').textContent = fecha;
   document.getElementById('res-porciones').textContent = `${presupuestoState.porciones} porciones`;
 
-  // Función helper para líneas de desglose
-  function lineasDesglose(items) {
-    if (items.length === 0) return '<div class="desglose-vacio">—</div>';
+  function lineas(items, usarInversion = false) {
+    if (!items || items.length === 0) return '<div class="desglose-vacio">—</div>';
     return items.map(it => `
       <div class="desglose-linea">
         <span class="desglose-nombre">${escapeHTML(it.nombre)}</span>
-        <span class="desglose-valor">$${it.costo.toFixed(2)}</span>
+        <span class="desglose-valor">$${(usarInversion ? it.costoInversion : it.costo).toFixed(2)}</span>
       </div>`).join('');
   }
 
-  // Desglose ingredientes
-  document.getElementById('res-ingredientes-desglose').innerHTML = lineasDesglose(res.detalleIngredientes);
-  document.getElementById('res-ingredientes-total').textContent = `$${res.subtotalIngredientes.toFixed(2)}`;
+  // ── Inversión inicial ──
+  document.getElementById('res-inv-ingredientes').innerHTML = lineas(res.detalleIngredientes, true);
+  document.getElementById('res-inv-ingredientes-total').textContent = `$${res.subtotalIngredientesInversion.toFixed(2)}`;
 
-  // Desglose energía
+  const secInvInsumos = document.getElementById('res-inv-insumos-seccion');
+  if (res.detalleInsumos.length === 0) {
+    secInvInsumos.style.display = 'none';
+  } else {
+    secInvInsumos.style.display = '';
+    document.getElementById('res-inv-insumos').innerHTML = lineas(res.detalleInsumos, true);
+    document.getElementById('res-inv-insumos-total').textContent = `$${res.subtotalInsumosInversion.toFixed(2)}`;
+  }
+
+  document.getElementById('res-inversion-total').textContent = `$${res.inversionInicial.toFixed(2)}`;
+  document.getElementById('res-venta-total').textContent = `$${res.ventaTotalAPrecioMinimo.toFixed(2)}`;
+  document.getElementById('res-ganancia-desde-cero').textContent = `$${res.gananciaDesdeCero.toFixed(2)}`;
+
+  // ── Costo por pieza ──
+  document.getElementById('res-ingredientes-desglose').innerHTML = lineas(res.detalleIngredientes);
+  document.getElementById('res-ingredientes-total').textContent = `$${res.subtotalIngredientesProrateado.toFixed(2)}`;
+
   const secEnergia = document.getElementById('res-energia-seccion');
   if (res.detalleEnergia.length === 0) {
     secEnergia.style.display = 'none';
   } else {
     secEnergia.style.display = '';
-    document.getElementById('res-energia-desglose').innerHTML = lineasDesglose(res.detalleEnergia);
+    document.getElementById('res-energia-desglose').innerHTML = lineas(res.detalleEnergia);
     document.getElementById('res-energia-total').textContent = `$${res.subtotalEnergia.toFixed(2)}`;
   }
 
-  // Mano de obra
   const secMO = document.getElementById('res-mo-seccion');
   if (res.manoDeObra === 0) {
     secMO.style.display = 'none';
@@ -411,26 +426,20 @@ function renderResultados() {
     document.getElementById('res-mo-total').textContent = `$${res.manoDeObra.toFixed(2)}`;
   }
 
-  // Insumos
   const secInsumos = document.getElementById('res-insumos-seccion');
   if (res.detalleInsumos.length === 0) {
     secInsumos.style.display = 'none';
   } else {
     secInsumos.style.display = '';
-    document.getElementById('res-insumos-desglose').innerHTML = lineasDesglose(res.detalleInsumos);
-    document.getElementById('res-insumos-total').textContent = `$${res.subtotalInsumos.toFixed(2)}`;
+    document.getElementById('res-insumos-desglose').innerHTML = lineas(res.detalleInsumos);
+    document.getElementById('res-insumos-total').textContent = `$${res.subtotalInsumosCorrida.toFixed(2)}`;
   }
 
-  // Costo total
-  document.getElementById('res-costo-total').textContent = `$${res.costoTotal.toFixed(2)}`;
-
-  // Resumen principal
+  document.getElementById('res-costo-total').textContent = `$${res.costoProduccionTotal.toFixed(2)}`;
   document.getElementById('res-costo-individual').textContent = `$${res.costoIndividual.toFixed(2)}`;
   document.getElementById('res-precio-minimo').textContent = `$${res.precioMinimo.toFixed(2)}`;
   document.getElementById('res-margen-label').textContent = `Margen ${presupuestoState.margen}% incluido`;
   document.getElementById('res-ganancia-pieza').textContent = `$${res.gananciaPorPieza.toFixed(2)}`;
-
-  // Contexto
   document.getElementById('res-ctx-gas').textContent = `$${presupuestoState.precioGas}/L`;
   document.getElementById('res-ctx-kwh').textContent = `$${presupuestoState.precioKwh}/kWh`;
   document.getElementById('res-ctx-margen').textContent = `${presupuestoState.margen}%`;
@@ -443,31 +452,29 @@ async function guardarEnHistorial() {
   const r = presupuestoState.receta;
   const res = presupuestoState.resultados;
 
-  const snapshot = {
+  const presupuestoId = await db.resultados_presupuesto.add({
     receta_id: r.id,
     nombre_receta: r.nombre,
     porciones_calculadas: presupuestoState.porciones,
-    subtotal_ingredientes: res.subtotalIngredientes,
+    subtotal_ingredientes: res.subtotalIngredientesProrateado,
     subtotal_energia: res.subtotalEnergia,
     mano_de_obra: res.manoDeObra,
-    subtotal_insumos: res.subtotalInsumos,
+    subtotal_insumos: res.subtotalInsumosCorrida,
+    costo_produccion_total: res.costoProduccionTotal,
     costo_individual: res.costoIndividual,
     precio_minimo_sugerido: res.precioMinimo,
     ganancia_por_pieza: res.gananciaPorPieza,
+    inversion_inicial: res.inversionInicial,
+    ganancia_desde_cero: res.gananciaDesdeCero,
     precio_gas_usado: presupuestoState.precioGas,
     precio_kwh_usado: presupuestoState.precioKwh,
     margen_usado: presupuestoState.margen,
     fecha: new Date().toISOString()
-  };
-
-  const presupuestoId = await db.resultados_presupuesto.add(snapshot);
+  });
 
   for (const insumo of presupuestoState.insumosAdicionales) {
     if (insumo.nombre.trim()) {
-      await db.insumos_adicionales.add({
-        presupuesto_snapshot_id: presupuestoId,
-        nombre: insumo.nombre
-      });
+      await db.insumos_adicionales.add({ presupuesto_snapshot_id: presupuestoId, nombre: insumo.nombre });
     }
   }
 
@@ -486,22 +493,12 @@ function cerrarPanelPresupuesto() {
 
 function nuevoPresupuesto() {
   presupuestoState = {
-    paso: 1,
-    receta: null,
-    porciones: 1,
-    precioGas: 0,
-    precioKwh: 0,
-    margen: 30,
-    ingredientesConPrecio: [],
-    horasTrabajadas: 0,
-    tarifaHora: 0,
-    insumosAdicionales: [],
-    resultados: null
+    paso: 1, receta: null, porciones: 1,
+    precioGas: 0, precioKwh: 0, margen: 30,
+    ingredientesConPrecio: [], horasTrabajadas: 0,
+    tarifaHora: 0, insumosAdicionales: [], resultados: null
   };
   renderPaso1();
 }
 
-function volverAPaso4() {
-  renderPaso4();
-}
-
+function volverAPaso4() { renderPaso4(); }
