@@ -1260,3 +1260,47 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--border) !important;
 }
 
+/* ─── Insumos del catálogo (paso 4) ─────────────────────── */
+.insumo-nombre-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.insumo-nombre-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.insumo-badge-catalogo {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* ─── Inversión inicial (paso 5) ─────────────────────────── */
+.inv-ganancia-bloque {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-dark);
+}
+.inv-ganancia-linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+}
+.inv-ganancia-resultado {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 15px;
+  padding-top: 8px;
+}
