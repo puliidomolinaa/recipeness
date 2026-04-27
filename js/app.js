@@ -8,8 +8,11 @@ function navegarA(seccionId) {
   document.getElementById(seccionId).classList.add('activa');
   document.querySelector(`[data-seccion="${seccionId}"]`).classList.add('active');
 
+  // Al mostrar presupuesto: verificar config sin guardar, pero NO abrir el panel automáticamente
   if (seccionId === 'sec-presupuesto') {
-    initPresupuesto();
+    if (typeof onMostrarSeccionPresupuesto === 'function') {
+      onMostrarSeccionPresupuesto();
+    }
   }
 }
 
@@ -67,7 +70,23 @@ async function guardarConfiguracion() {
       await db.configuracion_global.put({ clave, valor });
     }
   }
+  // Ocultar aviso si existía
+  const aviso = document.getElementById('aviso-config-sin-guardar');
+  if (aviso) aviso.style.display = 'none';
   mostrarToast('Configuración guardada');
+}
+
+function activarAvisosConfiguracion() {
+  const campos = ['precio_gas', 'precio_kwh', 'margen_ganancia', 'salario_minimo_hora', 'multiplicador_mano_obra'];
+  campos.forEach(clave => {
+    const el = document.getElementById(`cfg-${clave}`);
+    if (el) {
+      el.addEventListener('input', () => {
+        const aviso = document.getElementById('aviso-config-sin-guardar');
+        if (aviso) aviso.style.display = 'flex';
+      });
+    }
+  });
 }
 
 // ─── Equipos ─────────────────────────────────────────────
@@ -371,6 +390,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await renderEquipos();
   await renderInsumosCatalogo();
   await initRecetario();
+  activarAvisosConfiguracion();
 
   navegarA('sec-recetario');
 
