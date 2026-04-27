@@ -357,7 +357,8 @@ async function seleccionarInsumoCatalogo(id) {
 }
 
 function cerrarSelectorInsumos(e) {
-  if (e && e.target !== document.getElementById('insumos-selector-overlay')) return;
+  // Cerrar si se llamó sin evento (botón cancelar) o si se tocó el fondo del overlay
+  if (e && e.target.id !== 'insumos-selector-overlay') return;
   document.getElementById('insumos-selector-overlay').classList.remove('visible');
 }
 
