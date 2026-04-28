@@ -204,8 +204,6 @@ input:focus, select:focus, textarea:focus {
 .btn-icon svg { width: 16px; height: 16px; }
 .btn-edit  { background: var(--bg-input); color: var(--ink-2); border: 1.5px solid var(--border); }
 .btn-delete{ background: #FCEAEA; color: #B33; border: 1.5px solid #F5CCCC; }
-.btn-back  { background: transparent; color: var(--ink-2); }
-.btn-back svg { width: 20px; height: 20px; }
 
 /* ─── Lista de equipos ───────────────────────────────────── */
 .equipo-item {
@@ -361,1069 +359,214 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MÓDULO 2 — RECETARIO
+   MÓDULO 4 — HISTORIAL
    ══════════════════════════════════════════════════════════ */
 
-/* ─── Onboarding ─────────────────────────────────────────── */
-.onboarding-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(30,18,8,0.7);
-  z-index: 400;
-  display: flex;
-  align-items: flex-end;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s;
+/* ─── Grupos de receta ───────────────────────────────────── */
+.historial-grupo {
+  margin-bottom: 16px;
 }
-.onboarding-overlay.visible {
-  opacity: 1;
-  pointer-events: all;
-}
-.onboarding-sheet {
-  background: var(--bg);
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: 28px 24px 40px;
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(.32,.72,0,1);
-}
-.onboarding-overlay.visible .onboarding-sheet {
-  transform: translateY(0);
-}
-.onboarding-icon {
-  width: 56px; height: 56px;
-  background: var(--accent-light);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 18px;
-}
-.onboarding-icon svg {
-  width: 32px; height: 32px;
-  color: var(--accent);
-}
-.onboarding-titulo {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 12px;
-  letter-spacing: -0.02em;
-}
-.onboarding-texto {
-  font-size: 14px;
-  color: var(--ink-2);
+.historial-grupo-nombre {
   margin-bottom: 10px;
-  line-height: 1.6;
-}
-.onboarding-nota {
-  font-size: 13px;
-  color: var(--ink-3);
-  font-style: italic;
-  padding: 10px 12px;
-  background: var(--bg-input);
-  border-radius: var(--radius);
-  border-left: 3px solid var(--border-dark);
-  margin-bottom: 22px;
-}
-.onboarding-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* ─── Lista de recetas ───────────────────────────────────── */
-.recetas-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-bottom: 80px; /* espacio para FAB */
-}
-.receta-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-}
-.receta-item:first-child { border-top: 1.5px solid var(--border); }
-.receta-item-body {
-  flex: 1;
-  min-width: 0;
-  cursor: pointer;
-  padding: 2px 0;
-}
-.receta-nombre {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.receta-meta {
-  display: flex;
-  gap: 10px;
-  margin-top: 3px;
-  align-items: center;
-}
-.receta-categoria {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--accent);
-  background: var(--accent-light);
-  padding: 2px 7px;
-  border-radius: 4px;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-.receta-fecha {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-3);
-}
-
-/* ─── Estado vacío ───────────────────────────────────────── */
-.recetario-empty {
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 55dvh;
-  gap: 12px;
-  color: var(--ink-3);
-  text-align: center;
-}
-.recetario-empty svg {
-  width: 52px; height: 52px;
-  opacity: 0.25;
-}
-.recetario-empty p {
-  font-size: 15px;
-  color: var(--ink-2);
-}
-.recetario-empty-sub {
-  font-family: var(--font-mono);
-  font-size: 12px !important;
-  color: var(--ink-3) !important;
-  letter-spacing: 0.04em;
-}
-
-/* ─── Botón FAB ──────────────────────────────────────────── */
-.btn-fab {
-  position: fixed;
-  bottom: calc(var(--nav-h) + 16px);
-  right: 20px;
-  width: 52px; height: 52px;
-  background: var(--accent);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(196,80,26,0.4);
-  z-index: 90;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.btn-fab svg { width: 22px; height: 22px; color: #fff; }
-.btn-fab:active {
-  transform: scale(0.93);
-  box-shadow: 0 2px 8px rgba(196,80,26,0.3);
-}
-
-/* ─── Paneles de pantalla completa ───────────────────────── */
-.panel-fullscreen {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  z-index: 300;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.28s cubic-bezier(.32,.72,0,1);
-  /* No nav bottom — panel se superpone completamente */
-}
-.panel-fullscreen.visible {
-  transform: translateX(0);
-}
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1.5px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
-  min-height: 56px;
-  /* Respetar safe area iOS */
-  padding-top: max(12px, env(safe-area-inset-top));
-}
-.panel-titulo {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-  text-align: center;
-  flex: 1;
-}
-.panel-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  padding-bottom: 8px;
-  max-width: 600px;
-  width: 100%;
-  margin: 0 auto;
-}
-.panel-footer {
-  flex-shrink: 0;
-  padding: 12px 16px;
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
-  border-top: 1.5px solid var(--border);
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 600px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-/* ─── Aviso informativo ──────────────────────────────────── */
-.aviso-info {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  background: #FFF8E8;
-  border: 1.5px solid var(--gold);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  font-size: 13px;
-  color: var(--ink-2);
-  line-height: 1.5;
-  margin-bottom: 16px;
-}
-.aviso-info svg { flex-shrink: 0; margin-top: 2px; color: #C4950A; }
-
-/* ─── Filas de ingredientes ──────────────────────────────── */
-.ing-encabezado {
-  display: grid;
-  grid-template-columns: 1fr 70px 80px 36px;
-  gap: 6px;
-  padding: 0 0 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 8px;
-}
-.ing-fila {
-  margin-bottom: 6px;
-}
-.ing-fila-inputs {
-  display: grid;
-  grid-template-columns: 1fr 70px 80px 36px;
-  gap: 6px;
-  align-items: center;
-}
-.ing-campo-nombre { position: relative; }
-.ing-nombre-input { width: 100%; }
-.ing-cantidad-input { width: 100%; padding: 10px 8px; }
-.ing-unidad-select { width: 100%; padding: 10px 6px; font-size: 13px; }
-.ing-btn-delete { width: 36px; height: 36px; flex-shrink: 0; }
-
-/* Dropdown autocomplete */
-.autocomplete-dropdown {
-  position: absolute;
-  top: calc(100% + 2px);
-  left: 0;
-  right: 0;
-  background: var(--bg-card);
-  border: 1.5px solid var(--border-dark);
-  border-radius: var(--radius);
-  z-index: 350;
-  box-shadow: 0 4px 16px rgba(30,18,8,0.12);
-  max-height: 160px;
-  overflow-y: auto;
-}
-.ac-item {
-  padding: 10px 12px;
-  font-size: 14px;
-  color: var(--ink);
-  cursor: pointer;
-  border-bottom: 1px solid var(--border);
-}
-.ac-item:last-child { border-bottom: none; }
-.ac-item:active, .ac-item:hover { background: var(--accent-light); }
-
-/* Aviso nuevo ingrediente */
-.ing-aviso {
-  margin-top: 6px;
-  padding: 8px 10px;
-  background: #FFF8E8;
-  border: 1.5px solid var(--gold);
-  border-radius: var(--radius);
-  font-size: 13px;
-  color: var(--ink-2);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.aviso-btns {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.btn-aviso-si, .btn-aviso-no {
-  padding: 5px 12px;
-  border-radius: var(--radius);
-  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1.5px solid;
-}
-.btn-aviso-si {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-.btn-aviso-no {
-  background: var(--bg-input);
-  color: var(--ink-2);
-  border-color: var(--border);
 }
 
-/* ─── Filas de procesos ──────────────────────────────────── */
-.proc-encabezado {
+/* ─── Items del historial ────────────────────────────────── */
+.historial-items {
+  display: flex;
+  flex-direction: column;
+}
+.historial-item {
   display: grid;
-  grid-template-columns: 1fr 64px 56px 36px;
-  gap: 6px;
-  padding: 0 0 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
+  grid-template-columns: auto 1fr auto 16px;
+  gap: 6px 10px;
+  align-items: center;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 8px;
-}
-.proc-fila {
-  display: grid;
-  grid-template-columns: 1fr 64px 56px 36px;
-  gap: 6px;
-  align-items: center;
-  margin-bottom: 6px;
-}
-.proc-equipo-select { width: 100%; font-size: 13px; }
-.proc-minutos-input { width: 100%; padding: 10px 8px; }
-.proc-temp-input    { width: 100%; padding: 10px 6px; }
-.proc-temp-vacio    { width: 100%; height: 40px; }
-.proc-btn-delete    { width: 36px; height: 36px; flex-shrink: 0; }
-
-/* Botón agregar fila */
-.btn-agregar-fila {
-  margin-top: 10px;
-  font-size: 12px;
-  padding: 9px 14px;
-  width: auto;
-  display: inline-flex;
-}
-
-/* ─── Filtros de categorías ──────────────────────────────── */
-.filtros-categorias {
-  display: flex;
-  gap: 7px;
-  overflow-x: auto;
-  padding: 0 0 14px;
-  margin-bottom: 4px;
-  /* scroll suave y sin scrollbar visible */
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  cursor: grab;
-  user-select: none;
-}
-.filtros-categorias::-webkit-scrollbar { display: none; }
-.filtros-categorias.dragging { cursor: grabbing; }
-
-.filtro-chip {
-  flex-shrink: 0;
-  padding: 6px 14px;
-  border-radius: 100px;
-  border: 1.5px solid var(--border);
-  background: var(--bg-card);
-  color: var(--ink-2);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-.filtro-chip.activo {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-.filtro-chip:active { opacity: 0.8; }
-
-/* ─── Gestión de categorías en Configuración ─────────────── */
-.categorias-gestion {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-bottom: 12px;
-}
-.categoria-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-.categoria-item:last-child { border-bottom: none; }
-.categoria-nombre {
-  font-size: 14px;
-  color: var(--ink);
-}
-.categorias-nueva-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.categorias-nueva-row input { flex: 1; }
-
-/* ─── Vista de detalle ───────────────────────────────────── */
-.detalle-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.detalle-badge {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  background: var(--accent-light);
-  color: var(--accent);
-  padding: 3px 9px;
-  border-radius: 4px;
-  letter-spacing: 0.03em;
-}
-.detalle-porciones {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-3);
-}
-.detalle-notas {
-  font-size: 14px;
-  color: var(--ink-2);
-  font-style: italic;
-  line-height: 1.6;
-  padding: 12px 14px;
-  background: var(--bg-input);
-  border-radius: var(--radius);
-  margin-bottom: 16px;
-  border-left: 3px solid var(--border-dark);
-}
-.detalle-section-title {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin: 20px 0 8px;
-}
-.detalle-section-title:first-of-type { margin-top: 0; }
-.detalle-tabla {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.detalle-fila {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-}
-.detalle-fila:last-child { border-bottom: none; }
-.detalle-fila-nombre {
-  font-size: 14px;
-  color: var(--ink);
-  flex: 1;
-}
-.detalle-fila-valor {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--ink-2);
-  white-space: nowrap;
-  margin-left: 12px;
-}
-.detalle-empty {
-  font-size: 13px;
-  color: var(--ink-3);
-  font-style: italic;
-  padding: 8px 0;
-}
-.detalle-fechas {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  margin-top: 24px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-
-/* ══════════════════════════════════════════════════════════
-   MÓDULO 3 — PRESUPUESTO
-   ══════════════════════════════════════════════════════════ */
-
-/* ─── Stepper ────────────────────────────────────────────── */
-.presupuesto-stepper {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-  border-bottom: 1.5px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.presupuesto-stepper::-webkit-scrollbar { display: none; }
-
-.stepper-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-}
-.stepper-dot {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: var(--bg-input);
-  border: 1.5px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  transition: all 0.2s;
-}
-.stepper-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  white-space: nowrap;
-  transition: color 0.2s;
-}
-.stepper-step.activo .stepper-dot {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  font-weight: 500;
-}
-.stepper-step.activo .stepper-label { color: var(--accent); }
-.stepper-step.completado .stepper-dot {
-  background: var(--dark-bg);
-  border-color: var(--dark-bg);
-  color: var(--gold);
-}
-.stepper-step.completado .stepper-label { color: var(--ink-2); }
-
-.stepper-line {
-  flex: 1;
-  height: 1.5px;
-  background: var(--border);
-  margin: 0 4px;
-  margin-bottom: 14px; /* alinear con dot */
-  min-width: 12px;
-}
-
-/* ─── Pasos del presupuesto ──────────────────────────────── */
-.presupuesto-paso {
-  display: none;
-}
-.presupuesto-paso.activo {
-  display: block;
-}
-
-/* Footer por paso */
-.presupuesto-footer-paso {
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-}
-.presupuesto-footer-paso[data-paso].visible {
-  display: flex;
-}
-
-/* ─── Paso 1: Lista de selección de receta ───────────────── */
-.recetas-seleccion-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.receta-seleccion-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  background: none;
   cursor: pointer;
   transition: background 0.1s;
+  border-radius: 4px;
 }
-.receta-seleccion-item:first-child { border-top: 1.5px solid var(--border); }
-.receta-seleccion-item:active { background: var(--bg-input); }
-.receta-seleccion-nombre {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  flex: 1;
+.historial-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
-.receta-seleccion-meta {
-  display: flex;
-  gap: 10px;
-  margin-top: 3px;
+.historial-item:first-child {
+  padding-top: 0;
+}
+.historial-item:active {
+  background: var(--bg-input);
+}
+.historial-fecha {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--ink-3);
+  white-space: nowrap;
 }
-.receta-seleccion-chevron {
+.historial-costo {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  text-align: right;
+  white-space: nowrap;
+}
+.historial-minimo {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  grid-column: 1 / 3;
+  padding-top: 0;
+  margin-top: -4px;
+}
+.historial-chevron {
   width: 16px; height: 16px;
   color: var(--ink-3);
   flex-shrink: 0;
+  grid-row: 1;
+  grid-column: 4;
+  align-self: center;
 }
 
-/* ─── Cabecera de paso ───────────────────────────────────── */
-.paso-header {
-  margin-bottom: 16px;
-}
-.paso-receta-nombre {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-  margin-bottom: 2px;
-}
-.paso-subtitulo {
-  font-size: 13px;
-  color: var(--ink-3);
-  font-style: italic;
-}
-
-/* ─── Paso 3: Precio de ingredientes ────────────────────── */
-.ing-precio-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 10px;
-}
-.ing-precio-nombre {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--ink);
-}
-.ing-precio-necesita {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  white-space: nowrap;
-  margin-left: 8px;
-}
-.ing-precio-costo-unitario {
-  font-family: var(--font-mono);
+/* Botón tendencia */
+.historial-btn-tendencia {
+  margin-top: 10px;
+  padding: 8px 0;
   font-size: 12px;
   color: var(--accent);
-  margin-top: 6px;
-}
-
-/* ─── Paso 4: Mano de obra ───────────────────────────────── */
-.mano-obra-preview {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
-  background: var(--bg-input);
-  border-radius: var(--radius);
-  margin-top: 4px;
-  font-size: 13px;
-  color: var(--ink-2);
-  font-family: var(--font-mono);
-}
-.mano-obra-valor {
-  font-weight: 500;
-  color: var(--ink);
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  justify-content: flex-end;
 }
 
-.insumos-empty {
-  font-size: 13px;
-  color: var(--ink-3);
-  font-style: italic;
-  padding: 8px 0;
-}
-.insumo-item {
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-}
-.insumo-item:last-child { border-bottom: none; }
-.insumo-footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.insumo-subtotal {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-3);
-}
-
-/* ─── Formulario: hint ───────────────────────────────────── */
-.form-hint {
-  font-size: 12px;
-  color: var(--ink-3);
-  font-style: italic;
-  margin-top: -4px;
-}
-
-/* ─── Paso 5: Resultados ─────────────────────────────────── */
-.res-header {
+/* ─── Panel de detalle ───────────────────────────────────── */
+.detalle-header {
   margin-bottom: 16px;
   padding-bottom: 14px;
   border-bottom: 1.5px solid var(--border);
 }
-.res-receta-nombre {
-  font-size: 20px;
+.detalle-receta-nombre {
+  font-size: 18px;
   font-weight: 600;
   color: var(--ink);
   letter-spacing: -0.02em;
-  margin-bottom: 6px;
-}
-.res-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.res-badge {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  background: var(--accent-light);
-  color: var(--accent);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-.res-fecha {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-3);
-}
-
-/* Tarjeta de resumen principal */
-.res-resumen-card {
-  background: var(--dark-bg) !important;
-  border-color: var(--dark-bg) !important;
-  display: flex;
-  gap: 0;
-  padding: 0 !important;
-  overflow: hidden;
-}
-.res-metrica {
-  flex: 1;
-  padding: 16px 12px;
-  text-align: center;
-}
-.res-metrica-acento {
-  background: var(--accent);
-}
-.res-divisor {
-  width: 1px;
-  background: rgba(255,255,255,0.12);
-  flex-shrink: 0;
-}
-.res-metrica-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
-  margin-bottom: 6px;
-}
-.res-metrica-valor {
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 500;
-  color: #fff;
-}
-.res-metrica-acento-valor {
-  font-size: 20px;
-  font-weight: 600;
-}
-.res-metrica-sub {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: rgba(255,255,255,0.7);
-  margin-top: 3px;
-}
-
-/* Desglose por grupo */
-.desglose-grupo {
   margin-bottom: 4px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
 }
-.desglose-grupo:last-of-type {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-.desglose-grupo-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0 6px;
-}
-.desglose-grupo-titulo {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.desglose-grupo-total {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink);
-}
-.desglose-items {
-  padding-left: 8px;
-}
-.desglose-linea {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px 0;
-}
-.desglose-nombre {
-  font-size: 13px;
-  color: var(--ink-2);
-  flex: 1;
-}
-.desglose-valor {
+.detalle-fecha {
   font-family: var(--font-mono);
   font-size: 12px;
+  color: var(--ink-3);
+}
+.detalle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.detalle-row:last-of-type {
+  border-bottom: none;
+}
+.detalle-label {
+  font-size: 13px;
   color: var(--ink-2);
+  flex: 1;
+}
+.detalle-valor {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
   white-space: nowrap;
   margin-left: 12px;
 }
-.desglose-vacio {
-  font-size: 13px;
-  color: var(--ink-3);
-  padding: 4px 0;
-}
-
-/* Fila de total */
-.desglose-total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 0 2px;
-  border-top: 2px solid var(--border-dark);
-  margin-top: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.desglose-total-valor {
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-/* Tarjeta de contexto */
-.res-contexto-card {
-  background: var(--bg-input) !important;
-  border-color: var(--border) !important;
-}
-
-/* ─── Insumos del catálogo (paso 4) ─────────────────────── */
-.insumo-nombre-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.insumo-nombre-label {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--ink);
-}
-.insumo-badge-catalogo {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  background: var(--accent-light);
+.detalle-accent {
   color: var(--accent);
-  padding: 2px 7px;
-  border-radius: 4px;
+  font-weight: 500;
 }
-
-/* ─── Inversión inicial (paso 5) ─────────────────────────── */
-.inv-ganancia-bloque {
-  margin-top: 14px;
+.detalle-row-total {
+  border-top: 2px solid var(--border-dark);
+  margin-top: 4px;
   padding-top: 12px;
-  border-top: 1px dashed var(--border-dark);
+  border-bottom: none;
 }
-.inv-ganancia-linea {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  font-size: 13px;
-  color: var(--ink-2);
-  font-family: var(--font-mono);
-}
-.inv-ganancia-resultado {
+.detalle-row-total .detalle-label {
   font-weight: 600;
   color: var(--ink);
-  font-size: 15px;
-  padding-top: 8px;
+}
+.detalle-row-total .detalle-valor {
+  font-weight: 600;
+  font-size: 14px;
 }
 
-/* ─── Aviso configuración sin guardar ───────────────────── */
-.aviso-warning {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: #FEF3CD;
-  border: 1.5px solid #E8C97A;
-  border-radius: var(--radius);
-  padding: 12px 14px;
+/* ─── Panel de tendencia ─────────────────────────────────── */
+.tendencia-header {
   margin-bottom: 16px;
-  font-size: 13px;
-  color: #7A5A00;
-  flex-wrap: wrap;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--border);
 }
-.aviso-warning svg {
-  flex-shrink: 0;
-  margin-top: 1px;
-  color: #B8860B;
+.tendencia-receta-nombre {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
 }
-.aviso-warning span { flex: 1; line-height: 1.5; }
-.aviso-btn {
+.tendencia-rango {
   font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #7A5A00;
-  border: 1.5px solid #C8A800;
-  border-radius: 4px;
-  padding: 4px 10px;
-  background: none;
-  cursor: pointer;
-  white-space: nowrap;
-  align-self: center;
+  color: var(--ink-3);
 }
-
-/* ─── Selector de insumos ────────────────────────────────── */
-.insumo-selector-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 13px 0;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  background: none;
-  cursor: pointer;
-}
-.insumo-selector-item:first-child { border-top: 1.5px solid var(--border); }
-.insumo-selector-item:active { background: var(--bg-input); }
-.insumo-selector-nombre {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.insumo-selector-meta {
+.tendencia-count {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--ink-3);
   margin-top: 2px;
 }
-.insumo-selector-chevron {
-  width: 16px; height: 16px;
-  color: var(--ink-3);
-  flex-shrink: 0;
+
+/* Canvas wrapper */
+.tendencia-canvas-wrap {
+  width: 100%;
+  margin: 16px 0 8px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  padding: 8px 4px 4px;
+}
+.tendencia-canvas-wrap canvas {
+  display: block;
+  width: 100%;
 }
 
-/* ─── Paso 5: sin scroll fijo ────────────────────────────── */
-.presupuesto-panel-resultado-libre .panel-body {
-  overflow-y: auto;
-  max-height: none;
-  flex: 1;
-}
+/* Variación colores */
+.var-sube { color: #B33; }
+.var-baja { color: #2A7A2A; }
 
-/* ─── Mano de obra — formato columnas igual a equipos ────── */
-.desglose-linea-mo {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 12px;
-  align-items: center;
+/* Proyección */
+.tendencia-proyeccion {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.6;
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--border-dark);
 }
-.desglose-dur {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-3);
-  white-space: nowrap;
-}
-
-/* ─── Subtotal solo ingredientes (inversión inicial) ──────── */
-.desglose-inv-solo {
-  font-family: var(--font-mono);
+.tendencia-nota {
   font-size: 12px;
   color: var(--ink-3);
   font-style: italic;
-  padding: 6px 0 10px 8px;
-  border-bottom: 1px dashed var(--border);
-  margin-bottom: 4px;
+  margin-top: 8px;
+  padding: 0 4px;
 }
-
-/* ─── Insumo selector: ya agregado ───────────────────────── */
-.insumo-selector-ya-agregado {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* ─── Paso 5 sin scroll del panel (para screenshot/print) ── */
-.presupuesto-panel-resultado-libre {
-  overflow-y: auto;
-  height: auto;
-  max-height: none;
-  position: fixed; /* mantener sobre todo */
-}
-.presupuesto-panel-resultado-libre .panel-body {
-  overflow-y: visible;
-  max-height: none;
-  flex: none;
-}
-
-/* ─── Selector de insumos: z-index por encima del panel ──── */
-#insumos-selector-overlay {
-  z-index: 400;
+.tendencia-nota-linea {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+  text-align: center;
+  padding: 8px 0 4px;
 }
