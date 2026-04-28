@@ -12,35 +12,95 @@
 </head>
 <body>
 
+<!-- ─── Onboarding overlay ────────────────────────────── -->
+<div id="onboarding-overlay" class="onboarding-overlay">
+  <div class="onboarding-sheet">
+    <div class="onboarding-icon">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 6h24a2 2 0 012 2v32a2 2 0 01-2 2H12a2 2 0 01-2-2V8a2 2 0 012-2z"/>
+        <path d="M16 14h16M16 20h16M16 26h10"/>
+        <circle cx="36" cy="34" r="6" fill="var(--accent)" stroke="none"/>
+        <path d="M33 34l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 class="onboarding-titulo">Bienvenida a tu calculadora</h2>
+    <p class="onboarding-texto">
+      Aquí vas a gestionar tus recetas y calcular costos de producción.
+    </p>
+    <p class="onboarding-texto">
+      Antes de crear recetas, te recomendamos configurar tus <strong>equipos de cocina</strong> y los <strong>precios de energía</strong> para obtener cálculos precisos.
+    </p>
+    <p class="onboarding-texto onboarding-nota">
+      No es obligatorio — puedes crear recetas sin equipos, pero el costo energético no se calculará.
+    </p>
+    <div class="onboarding-actions">
+      <button class="btn btn-primary" onclick="cerrarOnboarding(true)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        Ir a Configuración
+      </button>
+      <button class="btn btn-secondary" onclick="cerrarOnboarding(false)">
+        Empezar con recetas
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── Sección: Recetario ─────────────────────────────── -->
 <section id="sec-recetario" class="seccion">
   <div class="seccion-header">
     <h1>Recetario</h1>
+    <p>Tus recetas y sus ingredientes</p>
   </div>
-  <div class="placeholder-content">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+
+  <div id="filtros-categorias" class="filtros-categorias"></div>
+
+  <div id="recetas-empty" class="recetario-empty" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
       <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
       <rect x="9" y="3" width="6" height="4" rx="2"/>
-      <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+      <line x1="9" y1="12" x2="15" y2="12"/>
+      <line x1="9" y1="16" x2="13" y2="16"/>
     </svg>
-    <p>Próximamente</p>
+    <p>Aún no tienes recetas.</p>
+    <p class="recetario-empty-sub">Toca + para crear la primera.</p>
   </div>
+
+  <div id="recetas-lista" class="recetas-lista"></div>
+
+  <button class="btn-fab" onclick="abrirFormularioReceta()" aria-label="Nueva receta">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  </button>
 </section>
 
 <!-- ─── Sección: Presupuesto ──────────────────────────── -->
 <section id="sec-presupuesto" class="seccion">
   <div class="seccion-header">
     <h1>Presupuesto</h1>
+    <p>Calculá el costo de producción de una receta</p>
   </div>
-  <div class="placeholder-content">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <rect x="2" y="3" width="20" height="14" rx="2"/>
-      <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+  <!-- Aviso configuración sin guardar -->
+  <div id="aviso-config-sin-guardar" class="aviso-warning" style="display:none;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
     </svg>
-    <p>Próximamente</p>
+    <span>Tenés cambios sin guardar en Configuración. Los presupuestos usarán los valores anteriores.</span>
+    <button class="aviso-btn" onclick="navegarA('sec-configuracion')">Ir a Configuración</button>
   </div>
+  <button class="btn btn-primary" onclick="initPresupuesto()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Nuevo presupuesto
+  </button>
 </section>
-
+  
 <!-- ─── Sección: Historial ────────────────────────────── -->
 <section id="sec-historial" class="seccion">
   <div class="seccion-header">
@@ -51,10 +111,26 @@
 </section>
 
 <!-- ─── Sección: Configuración ────────────────────────── -->
-<section id="sec-configuracion" class="seccion activa">
+<section id="sec-configuracion" class="seccion">
   <div class="seccion-header">
     <h1>Configuración</h1>
     <p>Constantes de cálculo y equipos</p>
+  </div>
+
+  <!-- Categorías -->
+  <div class="card">
+    <div class="card-title">Categorías de recetas</div>
+    <div id="categorias-lista" class="categorias-gestion"></div>
+    <div class="categorias-nueva-row">
+      <input type="text" id="nueva-categoria-input" placeholder="Nueva categoría..." maxlength="40"
+        onkeydown="if(event.key==='Enter') agregarCategoria()">
+      <button class="btn btn-secondary" style="width:auto;padding:10px 14px;" onclick="agregarCategoria()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Constantes globales -->
@@ -90,7 +166,8 @@
     <button class="btn btn-primary" onclick="guardarConfiguracion()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
       </svg>
       Guardar constantes
     </button>
@@ -102,9 +179,22 @@
     <div id="equipos-lista"></div>
     <button class="btn btn-secondary" style="margin-top:14px" onclick="abrirModalEquipo()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
       Agregar equipo
+    </button>
+  </div>
+
+  <!-- Insumos catálogo -->
+  <div class="card">
+    <div class="card-title">Insumos de empaque</div>
+    <div id="insumos-catalogo-lista"></div>
+    <button class="btn btn-secondary" style="margin-top:14px" onclick="abrirModalInsumoCatalogo()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Agregar insumo
     </button>
   </div>
 
@@ -114,14 +204,16 @@
     <button class="btn btn-secondary" onclick="handleExportar()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
       Exportar
     </button>
     <button class="btn btn-secondary" onclick="handleImportar()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
       </svg>
       Importar
     </button>
@@ -135,14 +227,16 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
       <rect x="9" y="3" width="6" height="4" rx="2"/>
-      <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/>
+      <line x1="9" y1="12" x2="15" y2="12"/>
+      <line x1="9" y1="16" x2="13" y2="16"/>
     </svg>
     Recetario
   </button>
   <button class="nav-item" data-seccion="sec-presupuesto">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <rect x="2" y="3" width="20" height="14" rx="2"/>
-      <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+      <line x1="8" y1="21" x2="16" y2="21"/>
+      <line x1="12" y1="17" x2="12" y2="21"/>
     </svg>
     Presupuesto
   </button>
@@ -174,7 +268,434 @@
   </div>
 </div>
 
-<!-- ─── Panel: Detalle de registro ───────────────────── -->
+<!-- ─── Panel de detalle de receta ────────────────────── -->
+<div id="detalle-panel" class="panel-fullscreen">
+  <div class="panel-header">
+    <button class="btn-icon btn-back" onclick="cerrarDetalle()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <h2 id="detalle-nombre" class="panel-titulo"></h2>
+    <div style="width:36px;"></div>
+  </div>
+  <div id="detalle-body" class="panel-body"></div>
+  <div class="panel-footer">
+    <button id="detalle-btn-editar" class="btn btn-secondary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Editar
+    </button>
+    <button id="detalle-btn-eliminar" class="btn btn-danger">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/>
+        <path d="M9 6V4h6v2"/>
+      </svg>
+      Eliminar
+    </button>
+  </div>
+</div>
+
+<!-- ─── Panel de formulario de receta ─────────────────── -->
+<div id="receta-form-panel" class="panel-fullscreen">
+  <div class="panel-header">
+    <button class="btn-icon btn-back" onclick="cerrarFormulario()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <h2 id="form-titulo" class="panel-titulo">Nueva receta</h2>
+    <div style="width:36px;"></div>
+  </div>
+
+  <div class="panel-body">
+    <!-- Aviso historial -->
+    <div id="form-historial-aviso" class="aviso-info" style="display:none;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Esta receta tiene presupuestos guardados en el historial. Los cambios que hagas no afectarán los registros anteriores.
+    </div>
+
+    <!-- Datos básicos -->
+    <div class="card">
+      <div class="card-title">Datos generales</div>
+      <div class="form-row">
+        <label for="rf-nombre">Nombre <span class="req">*</span></label>
+        <input type="text" id="rf-nombre" placeholder="Nombre de la receta" maxlength="120">
+      </div>
+      <div class="form-row-inline">
+        <div>
+          <label for="rf-categoria">Categoría</label>
+          <select id="rf-categoria">
+            <option value="Postre">Postre</option>
+            <option value="Comida">Comida</option>
+            <option value="Topping">Topping</option>
+            <option value="Salsa">Salsa</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label for="rf-porciones">Porciones <span class="req">*</span></label>
+          <input type="number" id="rf-porciones" min="1" step="1" placeholder="1">
+        </div>
+      </div>
+    </div>
+
+    <!-- Ingredientes -->
+    <div class="card">
+      <div class="card-title">Ingredientes</div>
+      <div class="ing-encabezado">
+        <span>Ingrediente</span>
+        <span>Cant.</span>
+        <span>Unidad</span>
+        <span></span>
+      </div>
+      <div id="ingredientes-filas"></div>
+      <button class="btn btn-secondary btn-agregar-fila" onclick="agregarFilaIngrediente()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Agregar ingrediente
+      </button>
+      <div class="form-row" style="margin-top:16px; margin-bottom:0;">
+        <label for="rf-notas">Proceso (opcional)</label>
+        <textarea id="rf-notas" placeholder="Pasos, temperatura de mezcla, orden de incorporación..." rows="3"></textarea>
+      </div>
+    </div>
+
+    <!-- Procesos -->
+    <div class="card">
+      <div class="card-title">Procesos de cocción</div>
+      <div class="proc-encabezado">
+        <span>Equipo</span>
+        <span>Min.</span>
+        <span>°C</span>
+        <span></span>
+      </div>
+      <div id="procesos-filas"></div>
+      <button class="btn btn-secondary btn-agregar-fila" onclick="agregarFilaProceso()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Agregar proceso
+      </button>
+    </div>
+
+    <div style="height: 24px;"></div>
+  </div>
+
+  <div class="panel-footer">
+    <button class="btn btn-primary" onclick="guardarReceta()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
+      </svg>
+      Guardar receta
+    </button>
+    <button class="btn btn-secondary" onclick="cerrarFormulario()">Cancelar</button>
+  </div>
+</div>
+
+
+<!-- ─── Panel de Presupuesto ──────────────────────────────── -->
+<div id="presupuesto-panel" class="panel-fullscreen">
+
+  <div class="panel-header">
+    <button class="btn-icon btn-back" onclick="cerrarPanelPresupuesto()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <h2 class="panel-titulo">Presupuesto</h2>
+    <div style="width:36px;"></div>
+  </div>
+
+  <div class="presupuesto-stepper">
+    <div class="stepper-step" data-step="1"><div class="stepper-dot">1</div><span class="stepper-label">Receta</span></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="2"><div class="stepper-dot">2</div><span class="stepper-label">Ajustes</span></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="3"><div class="stepper-dot">3</div><span class="stepper-label">Ingredientes</span></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="4"><div class="stepper-dot">4</div><span class="stepper-label">M. de obra</span></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="5"><div class="stepper-dot">5</div><span class="stepper-label">Resultado</span></div>
+  </div>
+
+  <div class="panel-body" id="presupuesto-panel-body">
+
+    <!-- PASO 1 -->
+    <div class="presupuesto-paso" data-paso="1">
+      <div class="paso-header">
+        <p class="paso-subtitulo">Seleccioná la receta que vas a presupuestar</p>
+      </div>
+      <div id="p1-recetas-empty" class="recetario-empty" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="2"/>
+        </svg>
+        <p>No hay recetas todavía.</p>
+        <p class="recetario-empty-sub">Crea una receta primero.</p>
+      </div>
+      <div id="p1-recetas-lista" class="recetas-seleccion-lista"></div>
+    </div>
+
+    <!-- PASO 2 -->
+    <div class="presupuesto-paso" data-paso="2">
+      <div class="paso-header">
+        <p id="p2-receta-nombre" class="paso-receta-nombre"></p>
+        <p class="paso-subtitulo">Ajustá las porciones y los precios de energía</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Producción</div>
+        <div class="form-row">
+          <label for="p2-porciones">Porciones a calcular</label>
+          <input type="number" id="p2-porciones" min="1" step="1" placeholder="1">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Precios de energía</div>
+        <div class="form-row">
+          <label for="p2-precio-gas">Gas (por litro)</label>
+          <input type="number" id="p2-precio-gas" min="0" step="any" placeholder="0.00">
+        </div>
+        <div class="form-row">
+          <label for="p2-precio-kwh">Electricidad (kWh)</label>
+          <input type="number" id="p2-precio-kwh" min="0" step="any" placeholder="0.00">
+        </div>
+        <p class="form-hint">Precargado desde Configuración. Modificá si cambió hoy.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Margen</div>
+        <div class="form-row">
+          <label for="p2-margen">Margen de ganancia (%)</label>
+          <input type="number" id="p2-margen" min="0" step="1" placeholder="30">
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div class="presupuesto-paso" data-paso="3">
+      <div class="paso-header">
+        <p class="paso-subtitulo">Ingresá el precio del paquete de cada ingrediente</p>
+      </div>
+      <div id="p3-sin-ingredientes" class="aviso-info" style="display:none;">
+        Esta receta no tiene ingredientes. Continuá al siguiente paso.
+      </div>
+      <div class="card">
+        <div id="p3-ingredientes-lista"></div>
+      </div>
+    </div>
+
+    <!-- PASO 4 -->
+    <div class="presupuesto-paso" data-paso="4">
+      <div class="paso-header">
+        <p class="paso-subtitulo">Registrá el tiempo trabajado y los insumos de empaque</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Mano de obra</div>
+        <div class="form-row-inline">
+          <div>
+            <label for="p4-horas">Horas trabajadas</label>
+            <input type="number" id="p4-horas" min="0" step="0.5" placeholder="0" oninput="actualizarManoObra()">
+          </div>
+          <div>
+            <label for="p4-tarifa">Tarifa por hora</label>
+            <input type="number" id="p4-tarifa" min="0" step="any" placeholder="0" oninput="actualizarManoObra()">
+          </div>
+        </div>
+        <div class="mano-obra-preview">
+          <span>Total mano de obra</span>
+          <span id="p4-mano-obra-total" class="mano-obra-valor">$0</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Insumos adicionales</div>
+        <div id="p4-insumos-lista"></div>
+        <div class="backup-row" style="margin-top:14px">
+          <button class="btn btn-secondary" onclick="abrirSelectorInsumos()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Del catálogo
+          </button>
+          <button class="btn btn-secondary" onclick="agregarInsumoManual()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Manual
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 5 -->
+    <div class="presupuesto-paso" data-paso="5">
+      <div class="res-header">
+        <h2 id="res-receta-nombre" class="res-receta-nombre"></h2>
+        <div class="res-meta-row">
+          <span id="res-porciones" class="res-badge"></span>
+          <span id="res-fecha" class="res-fecha"></span>
+        </div>
+      </div>
+
+      <!-- Inversión inicial -->
+      <div class="card">
+        <div class="card-title">Inversión inicial</div>
+        <p class="form-hint" style="margin-bottom:12px">Cuánto necesitás gastar para arrancar desde cero — paquetes completos de ingredientes e insumos.</p>
+        <div class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Ingredientes (paquetes)</span>
+            <span id="res-inv-ingredientes-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-inv-ingredientes" class="desglose-items"></div>
+        </div>
+        <!-- Subtotal solo ingredientes (útil para muestras/eventos sin insumos) -->
+        <div id="res-inv-solo-ingredientes" class="desglose-inv-solo" style="display:none;"></div>
+
+        <div id="res-inv-insumos-seccion" class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Insumos (paquetes)</span>
+            <span id="res-inv-insumos-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-inv-insumos" class="desglose-items"></div>
+        </div>
+        <div class="desglose-total-row">
+          <span>Total inversión</span>
+          <span id="res-inversion-total" class="desglose-total-valor"></span>
+        </div>
+        <div class="inv-ganancia-bloque">
+          <div class="inv-ganancia-linea">
+            <span>Venta total a precio mínimo</span>
+            <span id="res-venta-total"></span>
+          </div>
+          <div class="inv-ganancia-linea inv-ganancia-resultado">
+            <span>Ganancia desde cero</span>
+            <span id="res-ganancia-desde-cero"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen por pieza -->
+      <div class="card res-resumen-card">
+        <div class="res-metrica">
+          <div class="res-metrica-label">Costo por pieza</div>
+          <div id="res-costo-individual" class="res-metrica-valor"></div>
+        </div>
+        <div class="res-divisor"></div>
+        <div class="res-metrica res-metrica-acento">
+          <div class="res-metrica-label">Precio mínimo sugerido</div>
+          <div id="res-precio-minimo" class="res-metrica-valor res-metrica-acento-valor"></div>
+          <div id="res-margen-label" class="res-metrica-sub"></div>
+        </div>
+        <div class="res-divisor"></div>
+        <div class="res-metrica">
+          <div class="res-metrica-label">Ganancia por pieza</div>
+          <div id="res-ganancia-pieza" class="res-metrica-valor"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Desglose de costos</div>
+        <div class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Ingredientes</span>
+            <span id="res-ingredientes-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-ingredientes-desglose" class="desglose-items"></div>
+        </div>
+        <div id="res-energia-seccion" class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Energía</span>
+            <span id="res-energia-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-energia-desglose" class="desglose-items"></div>
+        </div>
+        <div id="res-mo-seccion" class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Mano de obra</span>
+            <span id="res-mo-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-mo-desglose" class="desglose-items"></div>
+        </div>
+        <div id="res-insumos-seccion" class="desglose-grupo">
+          <div class="desglose-grupo-header">
+            <span class="desglose-grupo-titulo">Insumos adicionales</span>
+            <span id="res-insumos-total" class="desglose-grupo-total"></span>
+          </div>
+          <div id="res-insumos-desglose" class="desglose-items"></div>
+        </div>
+        <div class="desglose-total-row">
+          <span>Total producción</span>
+          <span id="res-costo-total" class="desglose-total-valor"></span>
+        </div>
+      </div>
+
+      <div class="card res-contexto-card">
+        <div class="card-title">Valores usados</div>
+        <div class="resultado-linea"><span>Gas</span><span id="res-ctx-gas"></span></div>
+        <div class="resultado-linea"><span>Electricidad</span><span id="res-ctx-kwh"></span></div>
+        <div class="resultado-linea"><span>Margen aplicado</span><span id="res-ctx-margen"></span></div>
+      </div>
+
+      <div style="height:12px;"></div>
+    </div>
+
+  </div><!-- /panel-body -->
+
+  <div class="panel-footer" id="presupuesto-panel-footer">
+    <div class="presupuesto-footer-paso" data-paso="2">
+      <button class="btn btn-primary" onclick="confirmarPaso2()">Continuar</button>
+      <button class="btn btn-secondary" onclick="mostrarPaso(1)">Volver</button>
+    </div>
+    <div class="presupuesto-footer-paso" data-paso="3">
+      <button class="btn btn-primary" id="p3-btn-continuar" disabled onclick="renderPaso4()">Continuar</button>
+      <button class="btn btn-secondary" onclick="mostrarPaso(2)">Volver</button>
+    </div>
+    <div class="presupuesto-footer-paso" data-paso="4">
+      <button class="btn btn-primary" onclick="calcularResultados()">Calcular</button>
+      <button class="btn btn-secondary" onclick="mostrarPaso(3)">Volver</button>
+    </div>
+    <div class="presupuesto-footer-paso" data-paso="5">
+      <button class="btn btn-primary" onclick="guardarEnHistorial()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Guardar en historial
+      </button>
+      <div class="backup-row">
+        <button class="btn btn-secondary" onclick="volverAPaso4()">Volver a editar</button>
+        <button class="btn btn-secondary" onclick="nuevoPresupuesto()">Nuevo</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Modal selector de insumos ────────────────────────── -->
+<div id="insumos-selector-overlay" class="modal-overlay" onclick="cerrarSelectorInsumos(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Seleccionar insumo</div>
+    <div id="insumos-selector-lista" style="margin-bottom:16px"></div>
+    <button class="btn btn-secondary" onclick="cerrarSelectorInsumos()">Cancelar</button>
+  </div>
+</div>
+
+<!-- Panel: Detalle de registro -->
 <div id="historial-detalle-panel" class="modal-overlay">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -185,7 +706,7 @@
   </div>
 </div>
 
-<!-- ─── Panel: Tendencia ──────────────────────────────── -->
+<!-- Panel: Tendencia -->
 <div id="historial-tendencia-panel" class="modal-overlay">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -203,6 +724,7 @@
 <script src="js/dexie.js"></script>
 <script src="js/db.js"></script>
 <script src="js/recetario.js"></script>
+<script src="js/presupuesto.js"></script>
 <script src="js/backup.js"></script>
 <script src="js/historial.js"></script>
 <script src="js/app.js"></script>
