@@ -8,11 +8,8 @@ function navegarA(seccionId) {
   document.getElementById(seccionId).classList.add('activa');
   document.querySelector(`[data-seccion="${seccionId}"]`).classList.add('active');
 
-  // Al mostrar presupuesto: verificar config sin guardar, pero NO abrir el panel automáticamente
-  if (seccionId === 'sec-presupuesto') {
-    if (typeof onMostrarSeccionPresupuesto === 'function') {
-      onMostrarSeccionPresupuesto();
-    }
+  if (seccionId === 'sec-historial') {
+    renderHistorial();
   }
 }
 
@@ -70,23 +67,7 @@ async function guardarConfiguracion() {
       await db.configuracion_global.put({ clave, valor });
     }
   }
-  // Ocultar aviso si existía
-  const aviso = document.getElementById('aviso-config-sin-guardar');
-  if (aviso) aviso.style.display = 'none';
   mostrarToast('Configuración guardada');
-}
-
-function activarAvisosConfiguracion() {
-  const campos = ['precio_gas', 'precio_kwh', 'margen_ganancia', 'salario_minimo_hora', 'multiplicador_mano_obra'];
-  campos.forEach(clave => {
-    const el = document.getElementById(`cfg-${clave}`);
-    if (el) {
-      el.addEventListener('input', () => {
-        const aviso = document.getElementById('aviso-config-sin-guardar');
-        if (aviso) aviso.style.display = 'flex';
-      });
-    }
-  });
 }
 
 // ─── Equipos ─────────────────────────────────────────────
@@ -199,112 +180,6 @@ async function eliminarEquipo(id) {
   mostrarToast('Equipo eliminado');
 }
 
-// ─── Insumos catálogo ─────────────────────────────────────
-async function renderInsumosCatalogo() {
-  const lista = document.getElementById('insumos-catalogo-lista');
-  const insumos = await db.insumos_catalogo.toArray();
-
-  if (insumos.length === 0) {
-    lista.innerHTML = '<p class="equipos-empty">Aún no hay insumos registrados.</p>';
-    return;
-  }
-
-  lista.innerHTML = insumos.map(ins => {
-    const costoPieza = ins.piezas > 0
-      ? `$${(ins.precio_paquete / ins.piezas).toFixed(2)}/pieza`
-      : '';
-    return `
-      <div class="equipo-item" data-id="${ins.id}">
-        <div class="equipo-info">
-          <div class="equipo-nombre">${escapeHTML(ins.nombre)}</div>
-          <div class="equipo-meta">
-            $${ins.precio_paquete} por paquete · ${ins.piezas} piezas
-            ${costoPieza ? ` · ${costoPieza}` : ''}
-          </div>
-        </div>
-        <div class="equipo-actions">
-          <button class="btn-icon btn-edit" onclick="editarInsumoCatalogo(${ins.id})" title="Editar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </button>
-          <button class="btn-icon btn-delete" onclick="eliminarInsumoCatalogo(${ins.id})" title="Eliminar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-            </svg>
-          </button>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-function htmlFormInsumoCatalogo(insumo = null) {
-  const nombre = insumo ? escapeHTML(insumo.nombre) : '';
-  const precio = insumo ? insumo.precio_paquete : '';
-  const piezas = insumo ? insumo.piezas : '';
-
-  return `
-    <div class="form-row">
-      <label>Nombre del insumo</label>
-      <input type="text" id="ins-nombre" value="${nombre}" placeholder="Ej: Caja, Bolsa, Etiqueta..." maxlength="80">
-    </div>
-    <div class="form-row">
-      <label>Precio del paquete</label>
-      <input type="number" id="ins-precio" value="${precio}" min="0" step="any" placeholder="0.00">
-    </div>
-    <div class="form-row">
-      <label>Piezas por paquete</label>
-      <input type="number" id="ins-piezas" value="${piezas}" min="1" step="1" placeholder="ej: 100">
-    </div>`;
-}
-
-function abrirModalInsumoCatalogo(insumo = null) {
-  abrirModal({
-    titulo: insumo ? 'Editar insumo' : 'Nuevo insumo',
-    html: htmlFormInsumoCatalogo(insumo),
-    confirmar: insumo ? 'Guardar cambios' : 'Agregar insumo',
-    onConfirmar: async () => {
-      const nombre = document.getElementById('ins-nombre').value.trim();
-      const precio_paquete = parseFloat(document.getElementById('ins-precio').value) || 0;
-      const piezas = parseInt(document.getElementById('ins-piezas').value) || 0;
-
-      if (!nombre) {
-        mostrarToast('El nombre es obligatorio');
-        return false;
-      }
-      if (piezas < 1) {
-        mostrarToast('Las piezas por paquete deben ser al menos 1');
-        return false;
-      }
-
-      if (insumo) {
-        await db.insumos_catalogo.update(insumo.id, { nombre, precio_paquete, piezas });
-        mostrarToast('Insumo actualizado');
-      } else {
-        await db.insumos_catalogo.add({ nombre, precio_paquete, piezas });
-        mostrarToast('Insumo agregado');
-      }
-
-      await renderInsumosCatalogo();
-      return true;
-    }
-  });
-}
-
-async function editarInsumoCatalogo(id) {
-  const ins = await db.insumos_catalogo.get(id);
-  if (ins) abrirModalInsumoCatalogo(ins);
-}
-
-async function eliminarInsumoCatalogo(id) {
-  if (!confirm('¿Eliminar este insumo? Esta acción no se puede deshacer.')) return;
-  await db.insumos_catalogo.delete(id);
-  await renderInsumosCatalogo();
-  mostrarToast('Insumo eliminado');
-}
-
 // ─── Respaldo ────────────────────────────────────────────
 async function handleExportar() {
   try {
@@ -335,8 +210,6 @@ async function procesarImportacion(e) {
     await importarRespaldo(archivo);
     await cargarConfiguracion();
     await renderEquipos();
-    await renderInsumosCatalogo();
-    await renderRecetario();
     mostrarToast('Datos restaurados correctamente');
   } catch (err) {
     mostrarToast('Error: archivo inválido');
@@ -364,13 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initDB();
 
   document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      navegarA(item.dataset.seccion);
-      if (item.dataset.seccion === 'sec-configuracion') {
-        renderCategoriasConfig();
-        renderInsumosCatalogo();
-      }
-    });
+    item.addEventListener('click', () => navegarA(item.dataset.seccion));
   });
 
   document.getElementById('modal-confirmar').addEventListener('click', async () => {
@@ -388,25 +255,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await cargarConfiguracion();
   await renderEquipos();
-  await renderInsumosCatalogo();
-  await initRecetario();
-  activarAvisosConfiguracion();
 
-  navegarA('sec-recetario');
+  initHistorial();
 
-  const filtrosEl = document.getElementById('filtros-categorias');
-  let isDragging = false, startX, scrollLeft;
-  filtrosEl.addEventListener('mousedown', e => {
-    isDragging = true;
-    startX = e.pageX - filtrosEl.offsetLeft;
-    scrollLeft = filtrosEl.scrollLeft;
-    filtrosEl.classList.add('dragging');
-  });
-  filtrosEl.addEventListener('mouseleave', () => { isDragging = false; filtrosEl.classList.remove('dragging'); });
-  filtrosEl.addEventListener('mouseup', () => { isDragging = false; filtrosEl.classList.remove('dragging'); });
-  filtrosEl.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    e.preventDefault();
-    filtrosEl.scrollLeft = scrollLeft - (e.pageX - filtrosEl.offsetLeft - startX);
-  });
+  navegarA('sec-configuracion');
 });
