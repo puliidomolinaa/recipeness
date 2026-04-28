@@ -36,24 +36,32 @@ async function importarRespaldo(archivo) {
       try {
         const datos = JSON.parse(e.target.result);
 
-        const tablas = [
+        // Tablas que se reemplazan completamente (clear + bulkAdd)
+        const tablasReemplazar = [
           'configuracion_global',
           'equipos',
           'ingredientes_catalogo',
           'recetas',
           'procesos_receta',
           'ingredientes_receta',
-          'insumos_adicionales',
-          'resultados_presupuesto'
         ];
 
-        for (const tabla of tablas) {
+        for (const tabla of tablasReemplazar) {
           if (datos[tabla] !== undefined) {
             await db[tabla].clear();
             if (datos[tabla].length > 0) {
               await db[tabla].bulkAdd(datos[tabla]);
             }
           }
+        }
+
+        // Tablas de historial: mezclar con bulkPut para no borrar registros existentes
+        if (datos['insumos_adicionales'] !== undefined && datos['insumos_adicionales'].length > 0) {
+          await db.insumos_adicionales.bulkPut(datos['insumos_adicionales']);
+        }
+
+        if (datos['resultados_presupuesto'] !== undefined && datos['resultados_presupuesto'].length > 0) {
+          await db.resultados_presupuesto.bulkPut(datos['resultados_presupuesto']);
         }
 
         resolve();
