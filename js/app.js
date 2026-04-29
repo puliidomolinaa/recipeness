@@ -6,16 +6,17 @@ function navegarA(seccionId) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
   document.getElementById(seccionId).classList.add('activa');
-  document.querySelector(`[data-seccion="${seccionId}"]`).classList.add('active');
+  
+  const navItem = document.querySelector(`[data-seccion="${seccionId}"]`);
+  if (navItem) navItem.classList.add('active');
 
-  // Al mostrar presupuesto: verificar config sin guardar, pero NO abrir el panel automáticamente
   if (seccionId === 'sec-presupuesto') {
     if (typeof onMostrarSeccionPresupuesto === 'function') {
       onMostrarSeccionPresupuesto();
     }
-if (seccionId === 'sec-historial') {
-  renderHistorial();
-}
+  } 
+  else if (seccionId === 'sec-historial') {
+    renderHistorial();
   }
 }
 
