@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   await cargarConfiguracion();
   await renderEquipos();
-  aqait initHistorial();
+  await initHistorial();
   await renderInsumosCatalogo();
   await initRecetario();
   activarAvisosConfiguracion();
