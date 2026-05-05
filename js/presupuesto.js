@@ -13,17 +13,13 @@ let presupuestoState = {
   tarifaHora: 0,
   insumosAdicionales: [],
   resultados: null,
-  // Flags para saber si los pasos ya fueron llenados (no borrar al navegar)
   paso2Confirmado: false,
   paso3Confirmado: false,
   paso4Confirmado: false,
 };
 
 // ─── Init ─────────────────────────────────────────────────
-// Solo abre el panel y muestra selección de receta.
-// NO se llama automáticamente al navegar a la sección.
 function initPresupuesto() {
-  // Reset completo solo si no hay proceso en curso
   presupuestoState = {
     paso: 1, receta: null, porciones: 1,
     precioGas: 0, precioKwh: 0, margen: 30,
@@ -35,8 +31,6 @@ function initPresupuesto() {
 }
 
 // ─── Aviso configuración sin guardar ──────────────────────
-let _configOriginal = null;
-
 async function checkConfigSinGuardar() {
   const campos = ['precio_gas', 'precio_kwh', 'margen_ganancia', 'salario_minimo_hora', 'multiplicador_mano_obra'];
   const aviso = document.getElementById('aviso-config-sin-guardar');
@@ -57,35 +51,29 @@ async function checkConfigSinGuardar() {
   aviso.style.display = hayCambios ? 'flex' : 'none';
 }
 
-// Llamar desde app.js al montar la sección de presupuesto
 async function onMostrarSeccionPresupuesto() {
   await checkConfigSinGuardar();
 }
 
 // ─── Navegación de pasos ──────────────────────────────────
 function mostrarPaso(n) {
-  // Footer
   document.querySelectorAll('.presupuesto-footer-paso').forEach(el => {
     const visible = parseInt(el.dataset.paso) === n;
     el.style.display = visible ? 'flex' : 'none';
     if (visible) { el.style.flexDirection = 'column'; el.style.gap = '8px'; }
   });
   presupuestoState.paso = n;
-  // Pasos
   document.querySelectorAll('.presupuesto-paso').forEach(el => {
     el.classList.toggle('activo', parseInt(el.dataset.paso) === n);
   });
-  // Stepper
   document.querySelectorAll('.stepper-step').forEach(el => {
     const num = parseInt(el.dataset.step);
     el.classList.toggle('completado', num < n);
     el.classList.toggle('activo', num === n);
   });
-  // Scroll al tope
   const body = document.getElementById('presupuesto-panel-body');
   if (body) body.scrollTop = 0;
 
-  // Paso 5: panel sin restricción de altura para print/screenshot
   const panel = document.getElementById('presupuesto-panel');
   if (panel) {
     panel.classList.toggle('presupuesto-panel-resultado-libre', n === 5);
@@ -105,10 +93,12 @@ async function renderPaso1() {
     empty.style.display = 'none';
     lista.innerHTML = recetas.map(r => `
       <button class="receta-seleccion-item" onclick="seleccionarReceta(${r.id})">
-        <div class="receta-seleccion-nombre">${escapeHTML(r.nombre)}</div>
-        <div class="receta-seleccion-meta">
-          <span>${escapeHTML(r.categoria || 'Sin categoría')}</span>
-          <span>${r.porciones_base || 0} porciones</span>
+        <div>
+          <div class="receta-seleccion-nombre">${escapeHTML(r.nombre)}</div>
+          <div class="receta-seleccion-meta">
+            <span>${escapeHTML(r.categoria || 'Sin categoría')}</span>
+            <span>${r.porciones_base || 0} porciones</span>
+          </div>
         </div>
         <svg class="receta-seleccion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="9 18 15 12 9 6"/>
@@ -117,14 +107,34 @@ async function renderPaso1() {
   }
 
   abrirPanelPresupuesto();
+  _resetFooterPaso5();
   mostrarPaso(1);
+}
+
+// Restaura el footer del paso 5 a su estado inicial (por si fue modificado al guardar)
+function _resetFooterPaso5() {
+  const footer5 = document.querySelector('.presupuesto-footer-paso[data-paso="5"]');
+  if (!footer5) return;
+  footer5.innerHTML = `
+    <button id="btn-guardar-historial" class="btn btn-primary" onclick="guardarEnHistorial()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
+      </svg>
+      Guardar en historial
+    </button>
+    <div class="backup-row">
+      <button class="btn btn-secondary" onclick="volverAPaso4()">Volver a editar</button>
+      <button class="btn btn-secondary" onclick="nuevoPresupuesto()">Nuevo</button>
+    </div>
+  `;
 }
 
 async function seleccionarReceta(id) {
   const receta = await db.recetas.get(id);
   if (!receta) return;
 
-  // Solo resetear datos dependientes de la receta si cambia
   if (!presupuestoState.receta || presupuestoState.receta.id !== id) {
     presupuestoState.receta = receta;
     presupuestoState.porciones = receta.porciones_base || 1;
@@ -151,7 +161,6 @@ async function seleccionarReceta(id) {
 async function renderPaso2() {
   const r = presupuestoState.receta;
   document.getElementById('p2-receta-nombre').textContent = r.nombre;
-  // Preservar valores si ya fueron ingresados
   document.getElementById('p2-porciones').value = presupuestoState.porciones;
   document.getElementById('p2-precio-gas').value = presupuestoState.precioGas;
   document.getElementById('p2-precio-kwh').value = presupuestoState.precioKwh;
@@ -166,6 +175,19 @@ async function confirmarPaso2() {
   presupuestoState.margen = parseFloat(document.getElementById('p2-margen').value) ?? 30;
   presupuestoState.paso2Confirmado = true;
   await renderPaso3();
+}
+
+// ─── Persistencia de precios de ingredientes ──────────────
+// Guarda el último precio usado por ingrediente para precargar en futuros presupuestos.
+async function guardarPreciosIngredientes() {
+  for (const ing of presupuestoState.ingredientesConPrecio) {
+    if (ing.ingrediente_catalogo_id && ing.precioPaquete > 0 && ing.cantidadPaquete > 0) {
+      await db.configuracion_global.put({
+        clave: `precio_ing_${ing.ingrediente_catalogo_id}`,
+        valor: JSON.stringify({ precio: ing.precioPaquete, cantidad: ing.cantidadPaquete })
+      });
+    }
+  }
 }
 
 // ─── Paso 3: Precios de ingredientes ─────────────────────
@@ -188,17 +210,32 @@ async function renderPaso3() {
 
   avisoCero.style.display = 'none';
 
-  // Si ya hay ingredientes cargados (viene de volver atrás), no recargar
+  // Solo inicializar si no hay datos previos (permite volver desde paso 4 sin perder precios)
   if (presupuestoState.ingredientesConPrecio.length === 0) {
     const escala = presupuestoState.porciones / (r.porciones_base || 1);
     for (const ing of ingredientes) {
       const cat = await db.ingredientes_catalogo.get(ing.ingrediente_catalogo_id);
+
+      // Precargar precio guardado de uso anterior
+      let precioPaquete = 0, cantidadPaquete = 0;
+      if (ing.ingrediente_catalogo_id) {
+        const savedPrecio = await db.configuracion_global.get(`precio_ing_${ing.ingrediente_catalogo_id}`);
+        if (savedPrecio) {
+          try {
+            const parsed = JSON.parse(savedPrecio.valor);
+            precioPaquete = parsed.precio || 0;
+            cantidadPaquete = parsed.cantidad || 0;
+          } catch { /* datos corruptos, ignorar */ }
+        }
+      }
+
       presupuestoState.ingredientesConPrecio.push({
+        ingrediente_catalogo_id: ing.ingrediente_catalogo_id,
         nombre: cat?.nombre || 'Ingrediente',
         cantidadNecesaria: ing.cantidad * escala,
         unidad: ing.unidad || '',
-        precioPaquete: 0,
-        cantidadPaquete: 0
+        precioPaquete,
+        cantidadPaquete
       });
     }
   }
@@ -226,7 +263,7 @@ async function renderPaso3() {
       <div class="ing-precio-costo-unitario" id="costo-unitario-${i}"
         style="${ing.precioPaquete > 0 && ing.cantidadPaquete > 0 ? '' : 'display:none'}">
         ${ing.precioPaquete > 0 && ing.cantidadPaquete > 0
-          ? `Costo para esta receta: $${((ing.cantidadNecesaria / ing.cantidadPaquete) * ing.precioPaquete).toFixed(2)}`
+          ? _textoResumenIngrediente(ing)
           : ''}
       </div>
     </div>`).join('');
@@ -235,12 +272,23 @@ async function renderPaso3() {
     input.addEventListener('input', validarYActualizarPaso3);
   });
 
-  // Botón habilitado si ya estaban completos
   const todoCompleto = presupuestoState.ingredientesConPrecio.every(
     ing => ing.precioPaquete > 0 && ing.cantidadPaquete > 0
   );
   document.getElementById('p3-btn-continuar').disabled = !todoCompleto;
   mostrarPaso(3);
+}
+
+// Texto de resumen por ingrediente: uso prorrateado + paquetes necesarios para iniciar
+function _textoResumenIngrediente(ing) {
+  if (!ing.cantidadPaquete || !ing.precioPaquete) return '';
+  const costoUso = (ing.cantidadNecesaria / ing.cantidadPaquete) * ing.precioPaquete;
+  const paqNecesarios = Math.ceil(ing.cantidadNecesaria / ing.cantidadPaquete);
+  const costoInv = paqNecesarios * ing.precioPaquete;
+  if (paqNecesarios > 1) {
+    return `Uso: $${costoUso.toFixed(2)} · Para iniciar: $${costoInv.toFixed(2)} <span class="ing-precio-paquetes">(${paqNecesarios} paq.)</span>`;
+  }
+  return `Uso: $${costoUso.toFixed(2)}`;
 }
 
 function validarYActualizarPaso3() {
@@ -259,10 +307,9 @@ function validarYActualizarPaso3() {
     } else {
       presupuestoState.ingredientesConPrecio[i].precioPaquete = precio;
       presupuestoState.ingredientesConPrecio[i].cantidadPaquete = cantidad;
-      const costoUso = (presupuestoState.ingredientesConPrecio[i].cantidadNecesaria / cantidad) * precio;
       const display = document.getElementById(`costo-unitario-${i}`);
       if (display) {
-        display.textContent = `Costo para esta receta: $${costoUso.toFixed(2)}`;
+        display.innerHTML = _textoResumenIngrediente(presupuestoState.ingredientesConPrecio[i]);
         display.style.display = 'block';
       }
     }
@@ -272,20 +319,12 @@ function validarYActualizarPaso3() {
 
 // ─── Paso 4: Mano de obra e insumos ──────────────────────
 async function renderPaso4() {
-  // Cargar tarifa solo si no fue modificada manualmente
   if (!presupuestoState.paso4Confirmado) {
     const [salario, multiplicador] = await Promise.all([
       db.configuracion_global.get('salario_minimo_hora'),
       db.configuracion_global.get('multiplicador_mano_obra'),
     ]);
     presupuestoState.tarifaHora = (salario?.valor || 0) * (multiplicador?.valor || 2);
-
-    // Precargar insumos del catálogo solo la primera vez
-    if (presupuestoState.insumosAdicionales.length === 0) {
-      const catalogoInsumos = await db.insumos_catalogo.toArray();
-      // No precargar todos automáticamente — el usuario los selecciona
-      // Solo dejar la lista vacía para que elija
-    }
   }
 
   document.getElementById('p4-horas').value = presupuestoState.horasTrabajadas || '';
@@ -316,7 +355,6 @@ async function abrirSelectorInsumos() {
   } else {
     lista.innerHTML = catalogoInsumos.map(ins => {
       const costoPieza = ins.piezas > 0 ? ins.precio_paquete / ins.piezas : 0;
-      // Marcar si ya está agregado
       const yaAgregado = presupuestoState.insumosAdicionales.some(i => i.catalogoId === ins.id);
       return `
         <button class="insumo-selector-item ${yaAgregado ? 'insumo-selector-ya-agregado' : ''}"
@@ -357,7 +395,6 @@ async function seleccionarInsumoCatalogo(id) {
 }
 
 function cerrarSelectorInsumos(e) {
-  // Cerrar si se llamó sin evento (botón cancelar) o si se tocó el fondo del overlay
   if (e && e.target.id !== 'insumos-selector-overlay') return;
   document.getElementById('insumos-selector-overlay').classList.remove('visible');
 }
@@ -426,7 +463,6 @@ function actualizarInsumo(index, campo, valor) {
     presupuestoState.insumosAdicionales[index].nombre = valor;
   } else if (campo === 'costo') {
     presupuestoState.insumosAdicionales[index].costoPorPieza = valor;
-    // Re-render solo el subtotal sin romper el foco
     const items = document.querySelectorAll('.insumo-item');
     if (items[index]) {
       const subtotal = valor * presupuestoState.porciones;
@@ -443,26 +479,35 @@ function eliminarInsumo(index) {
 
 // ─── Cálculo de resultados ────────────────────────────────
 async function calcularResultados() {
-  // Guardar horas/tarifa actuales antes de calcular
   presupuestoState.horasTrabajadas = parseFloat(document.getElementById('p4-horas')?.value) || 0;
   presupuestoState.tarifaHora = parseFloat(document.getElementById('p4-tarifa')?.value) || 0;
   presupuestoState.paso4Confirmado = true;
 
+  // Persistir precios ingresados para futuros presupuestos de la misma receta
+  await guardarPreciosIngredientes();
+
   const r = presupuestoState.receta;
 
-  // Ingredientes
+  // ── Ingredientes ──
+  // Costo de uso: lo que realmente consume la receta (prorrateado del paquete).
+  // Costo de inversión: cuántos paquetes enteros hay que comprar para cubrir la cantidad necesaria.
   let subtotalIngredientesProrateado = 0;
   let subtotalIngredientesInversion = 0;
   const detalleIngredientes = presupuestoState.ingredientesConPrecio.map(ing => {
     const costoPorUso = ing.cantidadPaquete > 0
       ? (ing.cantidadNecesaria / ing.cantidadPaquete) * ing.precioPaquete
       : 0;
+    // BUGFIX: ceil de paquetes necesarios, no siempre 1
+    const paquetesNecesarios = ing.cantidadPaquete > 0
+      ? Math.ceil(ing.cantidadNecesaria / ing.cantidadPaquete)
+      : 1;
+    const costoInversion = paquetesNecesarios * ing.precioPaquete;
     subtotalIngredientesProrateado += costoPorUso;
-    subtotalIngredientesInversion += ing.precioPaquete;
-    return { nombre: ing.nombre, costo: costoPorUso, costoInversion: ing.precioPaquete };
+    subtotalIngredientesInversion += costoInversion;
+    return { nombre: ing.nombre, costo: costoPorUso, costoInversion, paquetesNecesarios };
   });
 
-  // Energía
+  // ── Energía ──
   let subtotalEnergia = 0;
   const detalleEnergia = [];
   const procesos = await db.procesos_receta.where('receta_id').equals(r.id).toArray();
@@ -480,10 +525,12 @@ async function calcularResultados() {
     detalleEnergia.push({ nombre: `${equipo.nombre} · ${proceso.minutos}min`, costo });
   }
 
-  // Mano de obra
+  // ── Mano de obra ──
   const manoDeObra = presupuestoState.horasTrabajadas * presupuestoState.tarifaHora;
 
-  // Insumos
+  // ── Insumos ──
+  // Costo de corrida: costoPorPieza × porciones producidas.
+  // Costo de inversión para insumos del catálogo: paquetes enteros necesarios para cubrir las porciones.
   let subtotalInsumosCorrida = 0;
   let subtotalInsumosInversion = 0;
   const detalleInsumos = presupuestoState.insumosAdicionales
@@ -491,18 +538,28 @@ async function calcularResultados() {
     .map(ins => {
       const costoCorrida = ins.costoPorPieza * presupuestoState.porciones;
       subtotalInsumosCorrida += costoCorrida;
-      const costoInversion = ins.esDeCatalogo ? (ins.precioPaquete || costoCorrida) : costoCorrida;
+
+      let costoInversion, paquetesNecesarios = null;
+      if (ins.esDeCatalogo && ins.piezasPorPaquete > 0 && ins.precioPaquete > 0) {
+        // BUGFIX: misma lógica que ingredientes — paquetes enteros necesarios
+        paquetesNecesarios = Math.ceil(presupuestoState.porciones / ins.piezasPorPaquete);
+        costoInversion = paquetesNecesarios * ins.precioPaquete;
+      } else {
+        // Insumo manual: no hay concepto de paquete, inversión = corrida
+        costoInversion = costoCorrida;
+      }
       subtotalInsumosInversion += costoInversion;
-      return { nombre: ins.nombre, costo: costoCorrida, costoInversion };
+
+      return { nombre: ins.nombre, costo: costoCorrida, costoInversion, paquetesNecesarios };
     });
 
-  // Por pieza
+  // ── Resumen por pieza ──
   const costoProduccionTotal = subtotalIngredientesProrateado + subtotalEnergia + manoDeObra + subtotalInsumosCorrida;
   const costoIndividual = costoProduccionTotal / presupuestoState.porciones;
   const precioMinimo = costoIndividual * (1 + presupuestoState.margen / 100);
   const gananciaPorPieza = precioMinimo - costoIndividual;
 
-  // Inversión inicial
+  // ── Inversión inicial ──
   const inversionInicial = subtotalIngredientesInversion + subtotalInsumosInversion;
   const ventaTotalAPrecioMinimo = precioMinimo * presupuestoState.porciones;
   const gananciaDesdeCero = ventaTotalAPrecioMinimo - inversionInicial - subtotalEnergia - manoDeObra;
@@ -529,20 +586,35 @@ function renderResultados() {
   document.getElementById('res-fecha').textContent = fecha;
   document.getElementById('res-porciones').textContent = `${presupuestoState.porciones} porciones`;
 
-  function lineas(items, usarInversion = false) {
+  // Líneas de desglose de uso (costo real de producción, prorrateado)
+  function lineas(items) {
     if (!items || items.length === 0) return '<div class="desglose-vacio">—</div>';
     return items.map(it => `
       <div class="desglose-linea">
         <span class="desglose-nombre">${escapeHTML(it.nombre)}</span>
-        <span class="desglose-valor">$${(usarInversion ? it.costoInversion : it.costo).toFixed(2)}</span>
+        <span class="desglose-valor">$${(it.costo || 0).toFixed(2)}</span>
       </div>`).join('');
   }
 
+  // Líneas de inversión inicial: muestra paquetes necesarios cuando son más de 1
+  function lineasInversion(items) {
+    if (!items || items.length === 0) return '<div class="desglose-vacio">—</div>';
+    return items.map(it => {
+      const paqLabel = it.paquetesNecesarios > 1
+        ? ` <span class="desglose-paquetes">(${it.paquetesNecesarios} paq.)</span>`
+        : '';
+      return `
+        <div class="desglose-linea">
+          <span class="desglose-nombre">${escapeHTML(it.nombre)}${paqLabel}</span>
+          <span class="desglose-valor">$${(it.costoInversion || 0).toFixed(2)}</span>
+        </div>`;
+    }).join('');
+  }
+
   // ── Inversión inicial ──
-  document.getElementById('res-inv-ingredientes').innerHTML = lineas(res.detalleIngredientes, true);
+  document.getElementById('res-inv-ingredientes').innerHTML = lineasInversion(res.detalleIngredientes);
   document.getElementById('res-inv-ingredientes-total').textContent = `$${res.subtotalIngredientesInversion.toFixed(2)}`;
 
-  // Subtotal solo ingredientes (sin insumos) — útil para muestras/eventos
   const secInvSoloIng = document.getElementById('res-inv-solo-ingredientes');
   if (secInvSoloIng) {
     secInvSoloIng.textContent = `Solo ingredientes: $${res.subtotalIngredientesInversion.toFixed(2)}`;
@@ -554,7 +626,7 @@ function renderResultados() {
     secInvInsumos.style.display = 'none';
   } else {
     secInvInsumos.style.display = '';
-    document.getElementById('res-inv-insumos').innerHTML = lineas(res.detalleInsumos, true);
+    document.getElementById('res-inv-insumos').innerHTML = lineasInversion(res.detalleInsumos);
     document.getElementById('res-inv-insumos-total').textContent = `$${res.subtotalInsumosInversion.toFixed(2)}`;
   }
 
@@ -575,13 +647,11 @@ function renderResultados() {
     document.getElementById('res-energia-total').textContent = `$${res.subtotalEnergia.toFixed(2)}`;
   }
 
-  // Mano de obra — formato: tarifa/h · horas · total
   const secMO = document.getElementById('res-mo-seccion');
   if (res.manoDeObra === 0) {
     secMO.style.display = 'none';
   } else {
     secMO.style.display = '';
-    // Formato igual a equipos: nombre · duración · costo
     document.getElementById('res-mo-desglose').innerHTML = `
       <div class="desglose-linea desglose-linea-mo">
         <span class="desglose-nombre">$${presupuestoState.tarifaHora.toFixed(2)}/hr</span>
@@ -643,8 +713,24 @@ async function guardarEnHistorial() {
     }
   }
 
+  // Actualizar footer: mostrar estado guardado con opciones claras
+  const footer5 = document.querySelector('.presupuesto-footer-paso[data-paso="5"]');
+  if (footer5) {
+    footer5.innerHTML = `
+      <button class="btn btn-primary" disabled style="background:#4A7A4A;opacity:0.85;cursor:default">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Guardado en historial
+      </button>
+      <div class="backup-row">
+        <button class="btn btn-secondary" onclick="cerrarPanelPresupuesto(); navegarA('sec-historial')">Ver análisis</button>
+        <button class="btn btn-secondary" onclick="nuevoPresupuesto()">Nuevo presupuesto</button>
+      </div>
+    `;
+  }
+
   mostrarToast('Guardado en historial');
-  setTimeout(() => nuevoPresupuesto(), 1000);
 }
 
 // ─── Acciones del panel ───────────────────────────────────
@@ -669,6 +755,5 @@ function nuevoPresupuesto() {
 }
 
 function volverAPaso4() {
-  // No resetear — renderPaso4 preserva el estado
   renderPaso4();
 }
