@@ -6,7 +6,7 @@ function navegarA(seccionId) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
   document.getElementById(seccionId).classList.add('activa');
-  
+
   const navItem = document.querySelector(`[data-seccion="${seccionId}"]`);
   if (navItem) navItem.classList.add('active');
 
@@ -14,8 +14,8 @@ function navegarA(seccionId) {
     if (typeof onMostrarSeccionPresupuesto === 'function') {
       onMostrarSeccionPresupuesto();
     }
-  } 
-  else if (seccionId === 'sec-historial') {
+    renderUltimoPresupuesto();
+  } else if (seccionId === 'sec-historial') {
     renderHistorial();
   }
 }
@@ -55,6 +55,54 @@ function cerrarModal() {
   modalCallback = null;
 }
 
+// ─── Último presupuesto en sección Presupuesto ───────────
+async function renderUltimoPresupuesto() {
+  const contenedor = document.getElementById('ultimo-presupuesto');
+  if (!contenedor) return;
+
+  const todos = await db.resultados_presupuesto.toArray();
+  if (todos.length === 0) {
+    contenedor.innerHTML = '';
+    return;
+  }
+
+  // Ordenar por fecha y tomar el más reciente
+  todos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  const r = todos[0];
+  const fecha = new Date(r.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  contenedor.innerHTML = `
+    <div class="divider-label" style="margin-top:24px">Último presupuesto</div>
+    <div class="card ultimo-presupuesto-card" onclick="navegarA('sec-historial')" style="cursor:pointer">
+      <div class="ultimo-receta-nombre">${escapeHTML(r.nombre_receta || 'Sin nombre')}</div>
+      <div class="ultimo-fecha">${fecha} · ${r.porciones_calculadas} porciones</div>
+      <div class="ultimo-metricas">
+        <div class="ultimo-metrica">
+          <span class="ultimo-metrica-label">Costo/pieza</span>
+          <span class="ultimo-metrica-valor">${formatMonedaApp(r.costo_individual)}</span>
+        </div>
+        <div class="ultimo-metrica">
+          <span class="ultimo-metrica-label">Precio mínimo</span>
+          <span class="ultimo-metrica-valor ultimo-metrica-acento">${formatMonedaApp(r.precio_minimo_sugerido)}</span>
+        </div>
+        <div class="ultimo-metrica">
+          <span class="ultimo-metrica-label">Ganancia</span>
+          <span class="ultimo-metrica-valor">${formatMonedaApp(r.ganancia_por_pieza)}/pza</span>
+        </div>
+      </div>
+      <div class="ultimo-ver-mas">
+        Ver análisis completo
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </div>
+    </div>`;
+}
+
+function formatMonedaApp(n) {
+  return '$' + (parseFloat(n) || 0).toFixed(2);
+}
+
 // ─── Configuración Global ────────────────────────────────
 async function cargarConfiguracion() {
   const campos = ['precio_gas', 'precio_kwh', 'margen_ganancia', 'salario_minimo_hora', 'multiplicador_mano_obra'];
@@ -74,7 +122,6 @@ async function guardarConfiguracion() {
       await db.configuracion_global.put({ clave, valor });
     }
   }
-  // Ocultar aviso si existía
   const aviso = document.getElementById('aviso-config-sin-guardar');
   if (aviso) aviso.style.display = 'none';
   mostrarToast('Configuración guardada');
@@ -398,8 +445,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   activarAvisosConfiguracion();
 
   navegarA('sec-recetario');
-
-
 
   const filtrosEl = document.getElementById('filtros-categorias');
   let isDragging = false, startX, scrollLeft;
