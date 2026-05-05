@@ -1640,3 +1640,95 @@ input:focus, select:focus, textarea:focus {
   text-align: center;
   padding: 8px 0 4px;
 }
+
+/* ─── Anotación de paquetes en resultados ────────────────── */
+/* Aparece en desglose de inversión inicial: "(3 paq.)" */
+.desglose-paquetes {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-left: 5px;
+  font-weight: 400;
+}
+
+/* Aparece en paso 3 junto al costo de uso */
+.ing-precio-paquetes {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  margin-left: 4px;
+}
+
+/* ─── Último presupuesto — sección principal ─────────────── */
+/* Contenedor dinámico debajo del botón "Nuevo presupuesto" */
+#ultimo-presupuesto .divider-label {
+  margin-top: 28px;
+}
+
+.ultimo-presupuesto-card {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ultimo-presupuesto-card:active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.ultimo-receta-nombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+
+.ultimo-fecha {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-bottom: 16px;
+}
+
+.ultimo-metricas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ultimo-metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ultimo-metrica-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.ultimo-metrica-valor {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.ultimo-metrica-acento {
+  color: var(--accent);
+}
+
+.ultimo-ver-mas {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+}
