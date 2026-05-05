@@ -84,6 +84,7 @@
     <h1>Presupuesto</h1>
     <p>Calculá el costo de producción de una receta</p>
   </div>
+
   <!-- Aviso configuración sin guardar -->
   <div id="aviso-config-sin-guardar" class="aviso-warning" style="display:none;">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -93,19 +94,23 @@
     <span>Tenés cambios sin guardar en Configuración. Los presupuestos usarán los valores anteriores.</span>
     <button class="aviso-btn" onclick="navegarA('sec-configuracion')">Ir a Configuración</button>
   </div>
+
   <button class="btn btn-primary" onclick="initPresupuesto()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
     Nuevo presupuesto
   </button>
+
+  <!-- Último presupuesto guardado — se rellena dinámicamente -->
+  <div id="ultimo-presupuesto"></div>
 </section>
-  
-<!-- ─── Sección: Historial ────────────────────────────── -->
+
+<!-- ─── Sección: Análisis (historial) ────────────────── -->
 <section id="sec-historial" class="seccion">
   <div class="seccion-header">
-    <h1>Historial</h1>
-    <p>Presupuestos guardados por receta</p>
+    <h1>Análisis</h1>
+    <p>Historial de presupuestos calculados</p>
   </div>
   <div id="historial-contenido"></div>
 </section>
@@ -244,7 +249,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
     </svg>
-    Historial
+    Análisis
   </button>
   <button class="nav-item active" data-seccion="sec-configuracion">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -313,7 +318,6 @@
   </div>
 
   <div class="panel-body">
-    <!-- Aviso historial -->
     <div id="form-historial-aviso" class="aviso-info" style="display:none;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>
@@ -323,7 +327,6 @@
       Esta receta tiene presupuestos guardados en el historial. Los cambios que hagas no afectarán los registros anteriores.
     </div>
 
-    <!-- Datos básicos -->
     <div class="card">
       <div class="card-title">Datos generales</div>
       <div class="form-row">
@@ -348,7 +351,6 @@
       </div>
     </div>
 
-    <!-- Ingredientes -->
     <div class="card">
       <div class="card-title">Ingredientes</div>
       <div class="ing-encabezado">
@@ -371,7 +373,6 @@
       </div>
     </div>
 
-    <!-- Procesos -->
     <div class="card">
       <div class="card-title">Procesos de cocción</div>
       <div class="proc-encabezado">
@@ -561,7 +562,6 @@
           </div>
           <div id="res-inv-ingredientes" class="desglose-items"></div>
         </div>
-        <!-- Subtotal solo ingredientes (útil para muestras/eventos sin insumos) -->
         <div id="res-inv-solo-ingredientes" class="desglose-inv-solo" style="display:none;"></div>
 
         <div id="res-inv-insumos-seccion" class="desglose-grupo">
@@ -668,7 +668,7 @@
       <button class="btn btn-secondary" onclick="mostrarPaso(3)">Volver</button>
     </div>
     <div class="presupuesto-footer-paso" data-paso="5">
-      <button class="btn btn-primary" onclick="guardarEnHistorial()">
+      <button id="btn-guardar-historial" class="btn btn-primary" onclick="guardarEnHistorial()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
           <polyline points="17 21 17 13 7 13 7 21"/>
